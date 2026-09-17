@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import AllProducts from './components/AllProducts';
 import BottomBar from './components/BottomBar';
+import CategoryBrowser from './components/CategoryBrowser';
 import Header from './components/Header';
 import ProductItem from './components/ProductItem';
-import Section from './components/Section';
+import TopBar from './components/TopBar';
 import {
   fetchHistory,
   fetchOutlet,
@@ -13,10 +13,10 @@ import {
 } from './lib/catalog';
 import { formatShortDate } from './lib/date';
 import { buildOrderLines, buildOrderText, orderTotal, whatsappUrl } from './lib/order';
-import { baseUnit } from './lib/pricing';
 import { configMissing } from './lib/supabase';
 
 const SUGGESTION_LIMIT = 12;
+const SEARCH_LIMIT = 60; // cukup untuk dipilih, tidak membanjiri HP kelas bawah
 
 export default function App() {
   const token = useMemo(() => tokenFromPath(), []);
@@ -27,6 +27,12 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [cart, setCart] = useState(() => new Map());
+  const [tab, setTab] = useState('history');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState(null);
+  // Daftar barang terpilih dibuka dari bar bawah, bukan jadi tab keempat —
+  // supaya ketiga tab tetap muat sejajar tanpa terpotong di layar 360px.
+  const [reviewing, setReviewing] = useState(false);
 
   useEffect(() => {
     if (configMissing || !token) {
@@ -47,8 +53,8 @@ export default function App() {
         setOutlet(found);
         setStatus('ready');
 
-        // Dua section teratas didahulukan supaya halaman cepat berguna di
-        // koneksi lambat; daftar lengkap menyusul di belakang.
+        // Dua daftar teratas didahulukan supaya halaman cepat berguna di
+        // koneksi lambat; katalog lengkap menyusul di belakang.
         const [historyRows, suggestionRows] = await Promise.all([
           fetchHistory(token),
           fetchSuggestions(token, SUGGESTION_LIMIT),
@@ -56,6 +62,9 @@ export default function App() {
         if (cancelled) return;
         setHistory(historyRows);
         setSuggestions(suggestionRows);
+        // Toko yang belum pernah order tidak punya isi di tab pertama —
+        // langsung arahkan ke daftar yang ada isinya.
+        if (!historyRows.length) setTab(suggestionRows.length ? 'new' : 'all');
 
         const productRows = await fetchProducts(token);
         if (cancelled) return;
@@ -82,7 +91,7 @@ export default function App() {
     });
   }, []);
 
-  // Satu produk bisa muncul di beberapa section; katalog produknya dikunci per
+  // Satu produk bisa muncul di beberapa daftar; katalog produknya dikunci per
   // id supaya nama, harga, dan satuan yang dipakai selalu satu sumber.
   const productIndex = useMemo(() => {
     const map = new Map();
@@ -94,6 +103,40 @@ export default function App() {
 
   const lines = useMemo(() => buildOrderLines(cart, productIndex), [cart, productIndex]);
   const total = useMemo(() => orderTotal(lines), [lines]);
+
+  const keyword = search.trim().toLowerCase();
+  const matches = useMemo(() => {
+    if (!keyword) return [];
+    const found = [];
+    for (const product of productIndex.values()) {
+      if (
+        product.name.toLowerCase().includes(keyword) ||
+        (product.sku || '').toLowerCase().includes(keyword)
+      ) {
+        found.push(product);
+      }
+    }
+    return found.sort((a, b) => a.name.localeCompare(b.name, 'id'));
+  }, [productIndex, keyword]);
+
+  // Kalau barang terakhir dihapus saat daftar terpilih sedang dibuka, jangan
+  // tinggalkan toko di layar kosong.
+  useEffect(() => {
+    if (reviewing && !lines.length) setReviewing(false);
+  }, [reviewing, lines.length]);
+
+  function changeTab(next) {
+    setTab(next);
+    setReviewing(false);
+    if (next !== 'all') setCategory(null);
+    window.scrollTo({ top: 0 });
+  }
+
+  function openReview() {
+    setReviewing(true);
+    setSearch('');
+    window.scrollTo({ top: 0 });
+  }
 
   function handleOrder() {
     if (!outlet || !lines.length) return;
@@ -107,9 +150,7 @@ export default function App() {
     return (
       <Centered>
         <p className="font-semibold text-gray-900">Link katalog tidak berlaku</p>
-        <p className="mt-1 text-gray-600">
-          Minta link terbaru ke sales atau admin, ya.
-        </p>
+        <p className="mt-1 text-gray-600">Minta link terbaru ke sales atau admin, ya.</p>
       </Centered>
     );
 
@@ -123,11 +164,28 @@ export default function App() {
       </Centered>
     );
 
+  const tabs = [
+    { id: 'history', label: 'Biasa Diambil', count: history.length },
+    { id: 'new', label: 'Belum Dicoba', count: suggestions.length },
+    { id: 'all', label: 'Semua Barang', count: products.length },
+  ];
+
   const missingWhatsapp = !outlet.whatsappNumber;
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="mx-auto max-w-lg bg-gray-50">
       <Header outlet={outlet} />
+
+      <TopBar
+        tabs={tabs}
+        activeTab={tab}
+        onTabChange={changeTab}
+        search={search}
+        onSearchChange={setSearch}
+        reviewing={reviewing}
+        pickedCount={lines.length}
+        onCloseReview={() => setReviewing(false)}
+      />
 
       {missingWhatsapp && (
         <p className="bg-amber-100 px-3 py-2 text-[12px] text-amber-900">
@@ -135,61 +193,56 @@ export default function App() {
         </p>
       )}
 
-      <Section
-        title="Biasa Diambil"
-        subtitle={
-          history.length
-            ? 'Barang yang paling sering diambil toko ini.'
-            : undefined
-        }
-      >
-        {history.length === 0 ? (
-          <p className="px-3 py-4 text-[13px] text-gray-500">
-            Belum ada riwayat pesanan untuk toko ini. Silakan pilih dari daftar
-            di bawah.
-          </p>
-        ) : (
-          <ul className="divide-y divide-gray-100">
-            {history.map((product) => (
-              <ProductItem
-                key={product.id}
-                product={product}
-                entry={cart.get(product.id)}
-                onChange={handleChange}
-                note={`${product.orderCount}× diambil · terakhir ${formatShortDate(
-                  product.lastOrdered
-                )}`}
-              />
-            ))}
-          </ul>
-        )}
-      </Section>
+      {reviewing ? (
+        <List
+          items={lines.map((l) => productIndex.get(l.productId)).filter(Boolean)}
+          cart={cart}
+          onChange={handleChange}
+          empty="Belum ada barang dipilih."
+        />
+      ) : keyword ? (
+        <SearchResults
+          matches={matches}
+          keyword={search.trim()}
+          loading={productsLoading}
+          cart={cart}
+          onChange={handleChange}
+        />
+      ) : (
+        <>
+          {tab === 'history' && (
+            <List
+              items={history}
+              cart={cart}
+              onChange={handleChange}
+              note={(p) => `${p.orderCount}× · ${formatShortDate(p.lastOrdered)}`}
+              empty="Belum ada riwayat pesanan untuk toko ini. Lihat tab Semua Barang."
+            />
+          )}
 
-      {suggestions.length > 0 && (
-        <Section
-          title="Belum Pernah Dicoba"
-          subtitle="Laris di toko lain, belum pernah diambil di sini."
-        >
-          <ul className="divide-y divide-gray-100">
-            {suggestions.map((product) => (
-              <ProductItem
-                key={product.id}
-                product={product}
-                entry={cart.get(product.id)}
-                onChange={handleChange}
-                note={`${product.categoryName} · dijual per ${baseUnit(product)}`}
-              />
-            ))}
-          </ul>
-        </Section>
+          {tab === 'new' && (
+            <List
+              items={suggestions}
+              cart={cart}
+              onChange={handleChange}
+              note={(p) => `${p.categoryName} · laris di toko lain`}
+              empty="Belum ada rekomendasi untuk toko ini."
+            />
+          )}
+
+          {tab === 'all' && (
+            <CategoryBrowser
+              products={products}
+              loading={productsLoading}
+              cart={cart}
+              onChange={handleChange}
+              category={category}
+              onCategoryChange={setCategory}
+            />
+          )}
+
+        </>
       )}
-
-      <AllProducts
-        products={products}
-        loading={productsLoading}
-        cart={cart}
-        onChange={handleChange}
-      />
 
       <p className="px-3 py-5 text-center text-[11px] text-gray-400">
         Harga dapat berubah sewaktu-waktu. Total di atas adalah estimasi.
@@ -200,7 +253,59 @@ export default function App() {
         total={total}
         onOrder={handleOrder}
         disabled={missingWhatsapp}
+        onReview={openReview}
+        reviewing={reviewing}
       />
+    </div>
+  );
+}
+
+function List({ items, cart, onChange, note, empty }) {
+  if (!items.length) {
+    return <p className="px-4 py-8 text-center text-[13px] text-gray-500">{empty}</p>;
+  }
+  return (
+    <ul className="divide-y divide-gray-100 bg-white">
+      {items.map((product) => (
+        <ProductItem
+          key={product.id}
+          product={product}
+          entry={cart.get(product.id)}
+          onChange={onChange}
+          note={note ? note(product) : undefined}
+        />
+      ))}
+    </ul>
+  );
+}
+
+function SearchResults({ matches, keyword, loading, cart, onChange }) {
+  const shown = matches.slice(0, SEARCH_LIMIT);
+  return (
+    <div>
+      <p className="px-3 py-2 text-[12px] text-gray-500">
+        {loading && !matches.length
+          ? 'Memuat daftar barang…'
+          : `${matches.length} barang cocok dengan “${keyword}”`}
+        {matches.length > SEARCH_LIMIT && ` — menampilkan ${SEARCH_LIMIT} teratas`}
+      </p>
+      {shown.length === 0 && !loading ? (
+        <p className="px-4 py-8 text-center text-[13px] text-gray-500">
+          Tidak ada barang yang cocok. Coba kata lain, atau cari lewat tab Semua Barang.
+        </p>
+      ) : (
+        <ul className="divide-y divide-gray-100 bg-white">
+          {shown.map((product) => (
+            <ProductItem
+              key={product.id}
+              product={product}
+              entry={cart.get(product.id)}
+              onChange={onChange}
+              note={product.categoryName}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

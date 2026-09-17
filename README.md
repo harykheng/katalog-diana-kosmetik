@@ -84,13 +84,36 @@ src/
 │   ├── order.js      ← susunan pesanan + teks & URL WhatsApp
 │   └── date.js
 ├── components/
-│   ├── Header.jsx        ← nama toko, distributor, WA kantor
-│   ├── Section.jsx
-│   ├── ProductItem.jsx   ← harga, pemilih satuan, stepper
-│   ├── AllProducts.jsx   ← search + kategori collapsed by default
-│   └── BottomBar.jsx     ← sticky: jumlah item, total, tombol pesan
+│   ├── Header.jsx          ← nama toko, distributor, WA kantor (ringkas)
+│   ├── TopBar.jsx          ← sticky: kolom cari + 3 tab
+│   ├── ProductItem.jsx     ← harga, pemilih satuan, stepper
+│   ├── CategoryBrowser.jsx ← tab Semua: daftar kategori → isinya
+│   └── BottomBar.jsx       ← sticky: jumlah item, total, tombol pesan
 └── App.jsx
 ```
+
+## Susunan layar
+
+Satu layar = satu daftar. Tiga daftar sejajar sebagai tab, bukan ditumpuk
+vertikal — kalau ditumpuk, toko dengan riwayat panjang harus menggulir jauh
+hanya untuk sampai ke daftar berikutnya atau ke kolom cari.
+
+```
+┌──────────────────────────┐
+│ Nama toko · distributor  │  header ringkas, ikut tergulir
+├──────────────────────────┤
+│ 🔍 Cari barang…          │  menempel di atas, mencari SELURUH katalog
+│ [Biasa][Belum][Semua]    │  tiga tab lebar sama, tidak ada yang terpotong
+├──────────────────────────┤
+│ daftar barang            │
+├──────────────────────────┤
+│ 2 barang · Rp x  [Pesan] │  menempel di bawah; sisi kiri membuka
+└──────────────────────────┘  daftar barang yang sudah dipilih
+```
+
+Tab "Semua Barang" menampilkan daftar kategori dulu, baru isinya. 1.500+ SKU
+tidak pernah dirender sekaligus — berat untuk HP kelas bawah, dan tidak mungkin
+ditelusuri dengan jempol.
 
 ## Format pesan WhatsApp
 
