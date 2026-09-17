@@ -21,15 +21,9 @@ function toProduct(row) {
   };
 }
 
-/**
- * Barang tanpa harga tidak boleh sampai ke layar toko: "Rp 0" terbaca seolah
- * gratis dan merusak Total estimasi di pesan WhatsApp. migration39 sudah
- * menyaringnya di database; ini penjaga kedua supaya katalog tetap benar
- * meskipun dipasang di project yang migration-nya belum dijalankan.
- */
-function hargaTerisi(product) {
-  return Number.isFinite(product.price) && product.price > 0;
-}
+// Barang tanpa harga sengaja TIDAK disaring di sini: toko tetap boleh
+// memesannya, cuma ditandai "Harga dikonfirmasi admin" dan tidak ikut dihitung
+// ke total (lihat hasPrice() di lib/pricing.js dan buildOrderLines()).
 
 
 export async function fetchOutlet(token) {
@@ -44,14 +38,12 @@ export async function fetchOutlet(token) {
 
 export async function fetchHistory(token) {
   const rows = await rpc('catalog_get_history', { p_token: token });
-  return rows
-    .map((row) => ({
-      ...toProduct(row),
-      orderCount: Number(row.order_count),
-      totalQty: Number(row.total_qty),
-      lastOrdered: row.last_ordered,
-    }))
-    .filter(hargaTerisi);
+  return rows.map((row) => ({
+    ...toProduct(row),
+    orderCount: Number(row.order_count),
+    totalQty: Number(row.total_qty),
+    lastOrdered: row.last_ordered,
+  }));
 }
 
 export async function fetchSuggestions(token, limit = 12) {
@@ -59,10 +51,10 @@ export async function fetchSuggestions(token, limit = 12) {
     p_token: token,
     p_limit: limit,
   });
-  return rows.map(toProduct).filter(hargaTerisi);
+  return rows.map(toProduct);
 }
 
 export async function fetchProducts(token) {
   const rows = await rpc('catalog_get_products', { p_token: token });
-  return rows.map(toProduct).filter(hargaTerisi);
+  return rows.map(toProduct);
 }

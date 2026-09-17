@@ -68,6 +68,13 @@ Ini bagian paling rawan di fitur ini — semua perhitungannya terkumpul di
 | Lusin berlaku untuk | produk bersatuan `pcs` saja |
 | Produk satuan lain | dijual apa adanya (lusin, box, pack, kg, …), tanpa konversi |
 | Tier harga per toko | belum dipakai — satu harga untuk semua toko |
+| Barang ber-harga 0 | tetap bisa dipesan, ditandai "Harga dikonfirmasi", **tidak ikut total** |
+
+Barang tanpa harga tidak pernah ditampilkan sebagai "Rp 0" — itu terbaca
+seperti gratis. Jumlahnya tetap bisa diisi, subtotalnya nol, bar bawah menulis
+"+n barang tanpa harga", dan di pesan WhatsApp barisnya diberi keterangan
+"(harga dikonfirmasi)" plus catatan di bawah total. Penentunya `hasPrice()` di
+`src/lib/pricing.js`; database mengirim apa adanya.
 
 Mode satuan di keranjang disimpan sebagai `'base'` atau `'lusin'`, **bukan** nama
 satuannya. Kalau dibandingkan dengan teks `'lusin'`, produk yang satuan dasarnya

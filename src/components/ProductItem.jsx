@@ -1,6 +1,7 @@
 import {
   baseUnit,
   formatCurrency,
+  hasPrice,
   isLusinMode,
   lusinPrice,
   PCS_PER_LUSIN,
@@ -27,6 +28,7 @@ export default function ProductItem({ product, entry, onChange, note }) {
   const perLusin = isLusinMode(product, mode);
   const activePrice = priceForUnit(product, mode);
   const label = unitLabel(product, mode);
+  const berharga = hasPrice(product);
 
   function setQty(next) {
     onChange(product.id, { qty: Math.max(0, Math.min(9999, next)), unit: mode });
@@ -41,8 +43,12 @@ export default function ProductItem({ product, entry, onChange, note }) {
 
   return (
     <li
-      className={`px-3 py-2.5 ${
-        qty > 0 ? 'border-l-[3px] border-l-emerald-500 bg-emerald-50/60' : 'border-l-[3px] border-l-transparent'
+      className={`border-l-[3px] px-3 py-2.5 ${
+        qty === 0
+          ? 'border-l-transparent'
+          : berharga
+            ? 'border-l-emerald-500 bg-emerald-50/60'
+            : 'border-l-amber-400 bg-amber-50/60'
       }`}
     >
       <div className="flex items-start gap-2">
@@ -75,15 +81,27 @@ export default function ProductItem({ product, entry, onChange, note }) {
 
       <div className="mt-1.5 flex items-end justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[13px] leading-tight">
-            <span className="font-bold text-gray-900">{formatCurrency(activePrice)}</span>
-            <span className="text-gray-500"> / {label}</span>
-          </p>
-          {canLusin && (
+          {berharga ? (
+            <p className="text-[13px] leading-tight">
+              <span className="font-bold text-gray-900">{formatCurrency(activePrice)}</span>
+              <span className="text-gray-500"> / {label}</span>
+            </p>
+          ) : (
+            // Sengaja tidak menampilkan "Rp 0" — itu terbaca seperti gratis.
+            <p className="inline-block rounded-md bg-amber-100 px-1.5 py-0.5 text-[12px] leading-tight font-semibold whitespace-nowrap text-amber-900">
+              Harga dikonfirmasi
+            </p>
+          )}
+          {canLusin && berharga && (
             <p className="mt-0.5 text-[11px] leading-tight text-gray-400">
               {perLusin
                 ? `${formatCurrency(product.price)} / pcs`
                 : `${formatCurrency(lusinPrice(product))} / lusin`}
+            </p>
+          )}
+          {!berharga && (
+            <p className="mt-0.5 text-[11px] leading-tight text-gray-500">
+              Boleh dipesan, harga menyusul
             </p>
           )}
           {note && (
@@ -126,9 +144,14 @@ export default function ProductItem({ product, entry, onChange, note }) {
       </div>
 
       {qty > 0 && (
-        <p className="mt-1.5 text-[12px] font-semibold text-emerald-800">
+        <p
+          className={`mt-1.5 text-[12px] font-semibold ${
+            berharga ? 'text-emerald-800' : 'text-amber-800'
+          }`}
+        >
           {qty} {label}
-          {perLusin && ` = ${qty * PCS_PER_LUSIN} pcs`} · {formatCurrency(qty * activePrice)}
+          {perLusin && ` = ${qty * PCS_PER_LUSIN} pcs`} ·{' '}
+          {berharga ? formatCurrency(qty * activePrice) : 'harga dikonfirmasi'}
         </p>
       )}
     </li>
