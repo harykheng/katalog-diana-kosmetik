@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { rpc } from './supabase';
 
 /**
  * Token diambil dari URL /t/:token. Tidak ada router library supaya bundle
@@ -21,14 +21,9 @@ function toProduct(row) {
   };
 }
 
-async function callRpc(fn, params) {
-  const { data, error } = await supabase.rpc(fn, params);
-  if (error) throw error;
-  return data || [];
-}
 
 export async function fetchOutlet(token) {
-  const rows = await callRpc('catalog_get_outlet', { p_token: token });
+  const rows = await rpc('catalog_get_outlet', { p_token: token });
   if (!rows.length) return null; // token tidak berlaku
   return {
     storeName: rows[0].store_name,
@@ -38,7 +33,7 @@ export async function fetchOutlet(token) {
 }
 
 export async function fetchHistory(token) {
-  const rows = await callRpc('catalog_get_history', { p_token: token });
+  const rows = await rpc('catalog_get_history', { p_token: token });
   return rows.map((row) => ({
     ...toProduct(row),
     orderCount: Number(row.order_count),
@@ -48,7 +43,7 @@ export async function fetchHistory(token) {
 }
 
 export async function fetchSuggestions(token, limit = 12) {
-  const rows = await callRpc('catalog_get_suggestions', {
+  const rows = await rpc('catalog_get_suggestions', {
     p_token: token,
     p_limit: limit,
   });
@@ -56,6 +51,6 @@ export async function fetchSuggestions(token, limit = 12) {
 }
 
 export async function fetchProducts(token) {
-  const rows = await callRpc('catalog_get_products', { p_token: token });
+  const rows = await rpc('catalog_get_products', { p_token: token });
   return rows.map(toProduct);
 }

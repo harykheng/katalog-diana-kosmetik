@@ -17,6 +17,10 @@ Toko (HP)  →  /t/:token  →  4 RPC Supabase (read-only, wajib token)  →  wa
   sudah ada**. Tidak ada tabel produk atau tabel harga baru — harga satu sumber
   di `products.price`, satuan satu sumber di `products.unit`.
 - Katalog tidak pernah menulis apa pun ke database.
+- Tanpa library `@supabase/supabase-js`: keempat RPC dipanggil dengan `fetch`
+  biasa ke endpoint PostgREST (`src/lib/supabase.js`, ±25 baris). Tetap Supabase,
+  tetap anon key, RLS dan hak akses fungsi tetap berlaku sama — tapi bundle turun
+  dari 132 KB gzip jadi 74 KB, yang terasa di HP dengan koneksi lambat.
 - Tidak ada nama distributor, nomor WA, atau ID toko yang ditulis di kode.
   Semuanya dari data (`app_settings` + tabel outlet).
 
@@ -74,7 +78,7 @@ memang lusin akan ikut dikali 12 sekali lagi.
 ```
 src/
 ├── lib/
-│   ├── supabase.js   ← client, semua dari environment variable
+│   ├── supabase.js   ← pemanggil RPC lewat fetch, semua dari environment variable
 │   ├── catalog.js    ← pembacaan token dari URL + 4 panggilan RPC
 │   ├── pricing.js    ← SATU-SATUNYA tempat perhitungan harga & satuan
 │   ├── order.js      ← susunan pesanan + teks & URL WhatsApp
