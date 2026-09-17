@@ -49,6 +49,22 @@ di Supabase SQL Editor (project yang sama dengan ERP). Migration itu membuat:
 
 Daftar link per toko bisa diambil dengan query di LANGKAH 7 file migration.
 
+### Urutan file di `supabase/`
+
+| File | Wajib? |
+|---|---|
+| `urgent_cabut_hak_anon.sql` | **Ya, pertama.** Mencabut hak role `anon` di seluruh tabel |
+| `migration37_catalog_per_toko.sql` | **Ya.** Token per toko + RLS + 4 RPC katalog |
+| `migration38_token_otomatis.sql` | **Ya.** Token otomatis untuk customer baru + `catalog_base_url` |
+| `migration39_sembunyikan_harga_kosong.sql` | **Tidak — jangan dijalankan.** Sudah digantikan |
+| `migration40_barang_tanpa_harga_tetap_tampil.sql` | **Hanya kalau 39 terlanjur dijalankan** |
+
+39 dan 40 saling meniadakan. 39 menyembunyikan barang ber-harga 0 dari katalog;
+keputusannya kemudian diubah — barang itu tetap ditampilkan dan boleh dipesan,
+ditandai "Harga dikonfirmasi" dan tidak ikut total (ditangani di sisi aplikasi,
+bukan database). 40 hanya ada untuk mengembalikan keadaan kalau 39 terlanjur
+dijalankan. Kalau 39 tidak pernah dijalankan, lewati keduanya.
+
 ## Deploy (Vercel)
 
 1. Import repo ini di Vercel (framework: Vite, build `npm run build`, output `dist`).
