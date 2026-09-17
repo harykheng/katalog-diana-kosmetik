@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+
+/* Mobile-first: target uji 360px. Tidak ada font eksternal supaya halaman tetap
+   ringan di koneksi lambat — pakai font bawaan HP. */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+  /* Ruang untuk sticky bottom bar + safe area iPhone */
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+/* Stepper: angka tanpa panah bawaan browser */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
