@@ -12,7 +12,13 @@ import {
   tokenFromPath,
 } from './lib/catalog';
 import { formatShortDate } from './lib/date';
-import { buildOrderLines, buildOrderText, orderTotal, whatsappUrl } from './lib/order';
+import {
+  buildOrderLines,
+  buildOrderText,
+  countNeedsPrice,
+  orderTotal,
+  whatsappUrl,
+} from './lib/order';
 import { configMissing } from './lib/supabase';
 
 const SUGGESTION_LIMIT = 12;
@@ -103,6 +109,7 @@ export default function App() {
 
   const lines = useMemo(() => buildOrderLines(cart, productIndex), [cart, productIndex]);
   const total = useMemo(() => orderTotal(lines), [lines]);
+  const needsPriceCount = useMemo(() => countNeedsPrice(lines), [lines]);
 
   const keyword = search.trim().toLowerCase();
   const matches = useMemo(() => {
@@ -255,6 +262,7 @@ export default function App() {
         disabled={missingWhatsapp}
         onReview={openReview}
         reviewing={reviewing}
+        needsPriceCount={needsPriceCount}
       />
     </div>
   );

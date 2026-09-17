@@ -24,6 +24,16 @@ export function supportsLusin(product) {
   return baseUnit(product) === 'pcs';
 }
 
+/**
+ * Sebagian SKU di ERP harganya masih 0 (biasanya barang baru). Barang begitu
+ * tetap boleh dipesan, tapi harganya dikonfirmasi admin dulu — jadi TIDAK
+ * PERNAH ikut dihitung ke total, dan tidak pernah ditampilkan sebagai "Rp 0"
+ * yang bisa terbaca seolah gratis.
+ */
+export function hasPrice(product) {
+  return Number.isFinite(Number(product.price)) && Number(product.price) > 0;
+}
+
 /** Harga satu lusin, mengikuti pembulatan ERP. */
 export function lusinPrice(product) {
   return Math.round((Number(product.price) * PCS_PER_LUSIN) / 100) * 100;

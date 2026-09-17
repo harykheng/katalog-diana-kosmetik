@@ -21,6 +21,10 @@ function toProduct(row) {
   };
 }
 
+// Barang tanpa harga sengaja TIDAK disaring di sini: toko tetap boleh
+// memesannya, cuma ditandai "Harga dikonfirmasi admin" dan tidak ikut dihitung
+// ke total (lihat hasPrice() di lib/pricing.js dan buildOrderLines()).
+
 
 export async function fetchOutlet(token) {
   const rows = await rpc('catalog_get_outlet', { p_token: token });

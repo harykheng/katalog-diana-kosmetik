@@ -49,6 +49,22 @@ di Supabase SQL Editor (project yang sama dengan ERP). Migration itu membuat:
 
 Daftar link per toko bisa diambil dengan query di LANGKAH 7 file migration.
 
+### Urutan file di `supabase/`
+
+| File | Wajib? |
+|---|---|
+| `urgent_cabut_hak_anon.sql` | **Ya, pertama.** Mencabut hak role `anon` di seluruh tabel |
+| `migration37_catalog_per_toko.sql` | **Ya.** Token per toko + RLS + 4 RPC katalog |
+| `migration38_token_otomatis.sql` | **Ya.** Token otomatis untuk customer baru + `catalog_base_url` |
+| `migration39_sembunyikan_harga_kosong.sql` | **Tidak — jangan dijalankan.** Sudah digantikan |
+| `migration40_barang_tanpa_harga_tetap_tampil.sql` | **Hanya kalau 39 terlanjur dijalankan** |
+
+39 dan 40 saling meniadakan. 39 menyembunyikan barang ber-harga 0 dari katalog;
+keputusannya kemudian diubah — barang itu tetap ditampilkan dan boleh dipesan,
+ditandai "Harga dikonfirmasi" dan tidak ikut total (ditangani di sisi aplikasi,
+bukan database). 40 hanya ada untuk mengembalikan keadaan kalau 39 terlanjur
+dijalankan. Kalau 39 tidak pernah dijalankan, lewati keduanya.
+
 ## Deploy (Vercel)
 
 1. Import repo ini di Vercel (framework: Vite, build `npm run build`, output `dist`).
@@ -68,6 +84,13 @@ Ini bagian paling rawan di fitur ini — semua perhitungannya terkumpul di
 | Lusin berlaku untuk | produk bersatuan `pcs` saja |
 | Produk satuan lain | dijual apa adanya (lusin, box, pack, kg, …), tanpa konversi |
 | Tier harga per toko | belum dipakai — satu harga untuk semua toko |
+| Barang ber-harga 0 | tetap bisa dipesan, ditandai "Harga dikonfirmasi", **tidak ikut total** |
+
+Barang tanpa harga tidak pernah ditampilkan sebagai "Rp 0" — itu terbaca
+seperti gratis. Jumlahnya tetap bisa diisi, subtotalnya nol, bar bawah menulis
+"+n barang tanpa harga", dan di pesan WhatsApp barisnya diberi keterangan
+"(harga dikonfirmasi)" plus catatan di bawah total. Penentunya `hasPrice()` di
+`src/lib/pricing.js`; database mengirim apa adanya.
 
 Mode satuan di keranjang disimpan sebagai `'base'` atau `'lusin'`, **bukan** nama
 satuannya. Kalau dibandingkan dengan teks `'lusin'`, produk yang satuan dasarnya

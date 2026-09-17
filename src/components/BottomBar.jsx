@@ -5,7 +5,15 @@ import { formatCurrency } from '../lib/pricing';
  * Sisi kirinya bisa diketuk untuk melihat & mengubah barang yang sudah dipilih,
  * supaya toko tidak perlu mengingat-ingat apa saja yang tadi dimasukkan.
  */
-export default function BottomBar({ itemCount, total, onOrder, disabled, onReview, reviewing }) {
+export default function BottomBar({
+  itemCount,
+  total,
+  onOrder,
+  disabled,
+  onReview,
+  reviewing,
+  needsPriceCount = 0,
+}) {
   const hasItems = itemCount > 0;
 
   return (
@@ -24,6 +32,13 @@ export default function BottomBar({ itemCount, total, onOrder, disabled, onRevie
               : 'Belum ada barang dipilih'}
           </p>
           <p className="truncate text-[16px] font-bold text-gray-900">{formatCurrency(total)}</p>
+          {needsPriceCount > 0 && (
+            // Totalnya tidak boleh terbaca lengkap kalau ada barang yang
+            // harganya belum ada — angkanya benar, tapi belum semuanya.
+            <p className="truncate text-[11px] font-semibold text-amber-700">
+              +{needsPriceCount} barang tanpa harga
+            </p>
+          )}
         </button>
 
         <button
