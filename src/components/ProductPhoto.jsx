@@ -16,7 +16,7 @@ export default function ProductPhoto({ product, onOpen }) {
     return (
       <div
         aria-hidden="true"
-        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-[18px] font-bold text-gray-400"
+        className="font-display flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-ice text-[20px] text-navy/55"
       >
         {huruf}
       </div>
@@ -28,7 +28,7 @@ export default function ProductPhoto({ product, onOpen }) {
       type="button"
       onClick={() => onOpen(product)}
       aria-label={`Lihat foto ${product.name}`}
-      className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white"
+      className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-line bg-white"
     >
       <img
         src={product.photoThumb}

@@ -159,16 +159,16 @@ export default function App() {
   if (status === 'invalid')
     return (
       <Centered>
-        <p className="font-semibold text-gray-900">Link katalog tidak berlaku</p>
-        <p className="mt-1 text-gray-600">Minta link terbaru ke sales atau admin, ya.</p>
+        <p className="font-display text-[18px] text-navy">Link katalog tidak berlaku</p>
+        <p className="mt-1.5 text-muted">Minta link terbaru ke sales atau admin, ya.</p>
       </Centered>
     );
 
   if (status === 'error')
     return (
       <Centered>
-        <p className="font-semibold text-gray-900">Katalog belum bisa dibuka</p>
-        <p className="mt-1 text-gray-600">
+        <p className="font-display text-[18px] text-navy">Katalog belum bisa dibuka</p>
+        <p className="mt-1.5 text-muted">
           Coba muat ulang halaman. Kalau masih sama, hubungi admin.
         </p>
       </Centered>
@@ -183,7 +183,7 @@ export default function App() {
   const missingWhatsapp = !outlet.whatsappNumber;
 
   return (
-    <div className="mx-auto max-w-lg bg-gray-50">
+    <div className="mx-auto max-w-lg bg-ice-light">
       <Header outlet={outlet} />
 
       <TopBar
@@ -198,7 +198,7 @@ export default function App() {
       />
 
       {missingWhatsapp && (
-        <p className="bg-amber-100 px-3 py-2 text-[12px] text-amber-900">
+        <p className="bg-warn-bg px-4 py-2 text-[12px] font-medium text-warn-ink">
           Nomor WhatsApp kantor belum diisi, tombol pesan belum bisa dipakai.
         </p>
       )}
@@ -259,7 +259,7 @@ export default function App() {
         </>
       )}
 
-      <p className="px-3 py-5 text-center text-[11px] text-gray-400">
+      <p className="px-4 py-5 text-center text-[11px] text-muted">
         Harga dapat berubah sewaktu-waktu. Total di atas adalah estimasi.
       </p>
 
@@ -280,10 +280,10 @@ export default function App() {
 
 function List({ items, cart, onChange, note, empty, onOpenPhoto }) {
   if (!items.length) {
-    return <p className="px-4 py-8 text-center text-[13px] text-gray-500">{empty}</p>;
+    return <p className="px-5 py-10 text-center text-[13px] text-muted">{empty}</p>;
   }
   return (
-    <ul className="divide-y divide-gray-100 bg-white">
+    <ul className="divide-y divide-line bg-white">
       {items.map((product) => (
         <ProductItem
           key={product.id}
@@ -302,18 +302,18 @@ function SearchResults({ matches, keyword, loading, cart, onChange, onOpenPhoto 
   const shown = matches.slice(0, SEARCH_LIMIT);
   return (
     <div>
-      <p className="px-3 py-2 text-[12px] text-gray-500">
+      <p className="px-4 py-2.5 text-[12px] text-muted">
         {loading && !matches.length
           ? 'Memuat daftar barang…'
           : `${matches.length} barang cocok dengan “${keyword}”`}
         {matches.length > SEARCH_LIMIT && ` — menampilkan ${SEARCH_LIMIT} teratas`}
       </p>
       {shown.length === 0 && !loading ? (
-        <p className="px-4 py-8 text-center text-[13px] text-gray-500">
+        <p className="px-5 py-10 text-center text-[13px] text-muted">
           Tidak ada barang yang cocok. Coba kata lain, atau cari lewat tab Semua Barang.
         </p>
       ) : (
-        <ul className="divide-y divide-gray-100 bg-white">
+        <ul className="divide-y divide-line bg-white">
           {shown.map((product) => (
             <ProductItem
               key={product.id}
@@ -332,7 +332,7 @@ function SearchResults({ matches, keyword, loading, cart, onChange, onOpenPhoto 
 
 function Centered({ children }) {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center px-6 text-center text-[14px] text-gray-600">
+    <div className="flex min-h-[60vh] items-center justify-center px-6 text-center text-[14px] text-muted">
       <div>{children}</div>
     </div>
   );

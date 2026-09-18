@@ -14,8 +14,8 @@ import {
 import ProductPhoto from './ProductPhoto';
 
 /**
- * Satu baris produk: dua baris saja supaya muat banyak barang per layar —
- * nama + pemilih satuan di atas, harga + stepper di bawah.
+ * Satu kartu produk: dua baris saja supaya muat banyak barang per layar —
+ * foto + nama + pemilih satuan di atas, harga + stepper di bawah.
  *
  * Satuan muncul di tiga tempat sekaligus: tombol pemilih, label di sebelah
  * angka jumlah, dan baris rekap saat barang dipilih. Salah satuan adalah
@@ -44,24 +44,24 @@ export default function ProductItem({ product, entry, onChange, note, onOpenPhot
 
   return (
     <li
-      className={`border-l-[3px] px-3 py-2.5 ${
+      className={`border-l-[3px] px-4 py-3 ${
         qty === 0
           ? 'border-l-transparent'
           : berharga
-            ? 'border-l-emerald-500 bg-emerald-50/60'
-            : 'border-l-amber-400 bg-amber-50/60'
+            ? 'border-l-navy bg-ice/45'
+            : 'border-l-warn-ink/60 bg-warn-bg/50'
       }`}
     >
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-2.5">
         <ProductPhoto product={product} onOpen={onOpenPhoto} />
 
-        <p className="min-w-0 flex-1 text-[14px] leading-snug font-semibold text-gray-900">
+        <p className="min-w-0 flex-1 text-[14px] leading-snug font-semibold text-ink">
           {product.name}
         </p>
 
         {canLusin && (
           <div
-            className="flex shrink-0 overflow-hidden rounded-lg border border-gray-300 text-[11px]"
+            className="flex shrink-0 overflow-hidden rounded-full border border-line text-[11px]"
             role="group"
             aria-label={`Satuan untuk ${product.name}`}
           >
@@ -71,8 +71,8 @@ export default function ProductItem({ product, entry, onChange, note, onOpenPhot
                 type="button"
                 onClick={() => setMode(m)}
                 aria-pressed={mode === m}
-                className={`px-2 py-1 font-semibold ${
-                  mode === m ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'
+                className={`px-2.5 py-1 font-semibold ${
+                  mode === m ? 'bg-navy text-white' : 'bg-white text-muted'
                 }`}
               >
                 {m === UNIT_BASE ? baseUnit(product) : 'lusin'}
@@ -82,33 +82,33 @@ export default function ProductItem({ product, entry, onChange, note, onOpenPhot
         )}
       </div>
 
-      <div className="mt-1.5 flex items-end justify-between gap-2">
+      <div className="mt-2 flex items-end justify-between gap-2">
         <div className="min-w-0">
           {berharga ? (
             <p className="text-[13px] leading-tight">
-              <span className="font-bold text-gray-900">{formatCurrency(activePrice)}</span>
-              <span className="text-gray-500"> / {label}</span>
+              <span className="font-bold text-navy">{formatCurrency(activePrice)}</span>
+              <span className="text-muted"> / {label}</span>
             </p>
           ) : (
             // Sengaja tidak menampilkan "Rp 0" — itu terbaca seperti gratis.
-            <p className="inline-block rounded-md bg-amber-100 px-1.5 py-0.5 text-[12px] leading-tight font-semibold whitespace-nowrap text-amber-900">
+            <p className="inline-block rounded-full bg-warn-bg px-2 py-0.5 text-[12px] leading-tight font-semibold whitespace-nowrap text-warn-ink">
               Harga dikonfirmasi
             </p>
           )}
           {canLusin && berharga && (
-            <p className="mt-0.5 text-[11px] leading-tight text-gray-400">
+            <p className="mt-0.5 text-[11px] leading-tight text-muted">
               {perLusin
                 ? `${formatCurrency(product.price)} / pcs`
                 : `${formatCurrency(lusinPrice(product))} / lusin`}
             </p>
           )}
           {!berharga && (
-            <p className="mt-0.5 text-[11px] leading-tight text-gray-500">
+            <p className="mt-0.5 text-[11px] leading-tight text-muted">
               Boleh dipesan, harga menyusul
             </p>
           )}
           {note && (
-            <p className="mt-0.5 truncate text-[11px] leading-tight text-gray-400">{note}</p>
+            <p className="mt-0.5 truncate text-[11px] leading-tight text-muted">{note}</p>
           )}
         </div>
 
@@ -118,7 +118,7 @@ export default function ProductItem({ product, entry, onChange, note, onOpenPhot
             onClick={() => setQty(qty - 1)}
             disabled={qty === 0}
             aria-label={`Kurangi ${product.name}`}
-            className="h-9 w-9 rounded-lg border border-gray-300 bg-white text-lg leading-none font-bold text-gray-700 disabled:opacity-30"
+            className="h-9 w-9 rounded-full border border-line bg-white text-lg leading-none font-bold text-navy disabled:opacity-30"
           >
             −
           </button>
@@ -129,27 +129,25 @@ export default function ProductItem({ product, entry, onChange, note, onOpenPhot
             placeholder="0"
             onChange={(e) => setQty(parseInt(e.target.value, 10) || 0)}
             aria-label={`Jumlah ${product.name} dalam ${label}`}
-            className="h-9 w-11 rounded-lg border border-gray-300 bg-white text-center text-[15px] font-semibold"
+            className="h-9 w-11 rounded-lg border border-line bg-white text-center text-[15px] font-semibold text-ink"
           />
           <button
             type="button"
             onClick={() => setQty(qty + 1)}
             aria-label={`Tambah ${product.name}`}
-            className="h-9 w-9 rounded-lg border border-gray-300 bg-white text-lg leading-none font-bold text-gray-700"
+            className="h-9 w-9 rounded-full border border-line bg-white text-lg leading-none font-bold text-navy"
           >
             +
           </button>
           {/* Satuan di sebelah angka — tidak boleh hilang di layar sempit */}
-          <span className="w-9 text-[11px] leading-tight font-bold text-gray-900">
-            {label}
-          </span>
+          <span className="w-9 text-[11px] leading-tight font-bold text-ink">{label}</span>
         </div>
       </div>
 
       {qty > 0 && (
         <p
-          className={`mt-1.5 text-[12px] font-semibold ${
-            berharga ? 'text-emerald-800' : 'text-amber-800'
+          className={`mt-2 text-[12px] font-semibold ${
+            berharga ? 'text-navy' : 'text-warn-ink'
           }`}
         >
           {qty} {label}

@@ -115,6 +115,26 @@ src/
 └── App.jsx
 ```
 
+## Tampilan
+
+Palet mengikuti arah visual referensi skincare: biru es sangat terang sebagai
+latar, navy pekat untuk tombol & judul, kartu putih, sudut membulat. Semua
+warna didefinisikan sebagai token di `@theme` pada `src/index.css` — komponen
+memakai namanya (`bg-navy`, `text-ink`, `bg-ice`), tidak ada hex yang
+bertaburan di JSX, jadi mengganti nuansa cukup di satu file.
+
+| Token | Dipakai untuk |
+|---|---|
+| `navy` | tombol utama, judul, harga, tab aktif |
+| `ice` / `ice-light` | latar halaman, chip, baris terpilih |
+| `ink` / `muted` | teks utama & sekunder |
+| `line` | garis pemisah & border |
+| `warn-bg` / `warn-ink` | barang tanpa harga |
+
+Judul memakai serif bawaan perangkat (`--font-display`), **bukan** font dari
+Google — satu permintaan jaringan tambahan sebelum halaman bisa dibaca terlalu
+mahal untuk HP kelas bawah dengan koneksi lambat.
+
 ## Susunan layar
 
 Satu layar = satu daftar. Tiga daftar sejajar sebagai tab, bukan ditumpuk

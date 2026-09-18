@@ -28,7 +28,7 @@ export default function PhotoModal({ product, onClose }) {
       aria-modal="true"
       aria-label={`Foto ${product.name}`}
       onClick={onClose}
-      className="fixed inset-0 z-40 flex flex-col justify-center bg-black/80 px-4"
+      className="fixed inset-0 z-40 flex flex-col justify-center bg-navy/85 px-4"
     >
       <button
         type="button"
@@ -42,13 +42,13 @@ export default function PhotoModal({ product, onClose }) {
       <img
         src={product.photoLarge || product.photoThumb}
         alt={product.name}
-        className="max-h-[70vh] w-full rounded-xl bg-white object-contain"
+        className="max-h-[70vh] w-full rounded-2xl bg-white object-contain"
         onClick={(e) => e.stopPropagation()}
       />
 
       <div className="mt-3 text-center text-white" onClick={(e) => e.stopPropagation()}>
-        <p className="text-[15px] leading-snug font-semibold">{product.name}</p>
-        <p className="mt-1 text-[13px] text-gray-300">
+        <p className="font-display text-[17px] leading-snug">{product.name}</p>
+        <p className="mt-1 text-[13px] text-ice">
           {hasPrice(product)
             ? `${formatCurrency(product.price)} / ${unitLabel(product, UNIT_BASE)}`
             : 'Harga dikonfirmasi admin'}
