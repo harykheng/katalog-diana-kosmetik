@@ -1,4 +1,4 @@
-import { publicStorageUrl, rpc } from './supabase';
+import { publicStorageUrl, rpc, rpcAll } from './supabase';
 
 const BUCKET_FOTO = 'product-photos';
 
@@ -42,7 +42,7 @@ export async function fetchOutlet(token) {
 }
 
 export async function fetchHistory(token) {
-  const rows = await rpc('catalog_get_history', { p_token: token });
+  const rows = await rpcAll('catalog_get_history', { p_token: token });
   return rows.map((row) => ({
     ...toProduct(row),
     orderCount: Number(row.order_count),
@@ -60,6 +60,6 @@ export async function fetchSuggestions(token, limit = 12) {
 }
 
 export async function fetchProducts(token) {
-  const rows = await rpc('catalog_get_products', { p_token: token });
+  const rows = await rpcAll('catalog_get_products', { p_token: token });
   return rows.map(toProduct);
 }
