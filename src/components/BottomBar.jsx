@@ -17,8 +17,8 @@ export default function BottomBar({
   const hasItems = itemCount > 0;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
-      <div className="mx-auto flex max-w-lg items-center gap-3 px-3 py-2.5">
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_18px_rgba(15,42,71,0.10)]">
+      <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3">
         <button
           type="button"
           onClick={hasItems ? onReview : undefined}
@@ -26,16 +26,16 @@ export default function BottomBar({
           aria-label={hasItems ? 'Lihat barang yang dipilih' : undefined}
           className="min-w-0 flex-1 text-left disabled:cursor-default"
         >
-          <p className="text-[12px] text-gray-500">
+          <p className="text-[12px] text-muted">
             {hasItems
               ? `${itemCount} barang dipilih${reviewing ? '' : ' · lihat'}`
               : 'Belum ada barang dipilih'}
           </p>
-          <p className="truncate text-[16px] font-bold text-gray-900">{formatCurrency(total)}</p>
+          <p className="truncate text-[17px] font-bold text-navy">{formatCurrency(total)}</p>
           {needsPriceCount > 0 && (
             // Totalnya tidak boleh terbaca lengkap kalau ada barang yang
             // harganya belum ada — angkanya benar, tapi belum semuanya.
-            <p className="truncate text-[11px] font-semibold text-amber-700">
+            <p className="truncate text-[11px] font-semibold text-warn-ink">
               +{needsPriceCount} barang tanpa harga
             </p>
           )}
@@ -45,7 +45,7 @@ export default function BottomBar({
           type="button"
           onClick={onOrder}
           disabled={disabled || !hasItems}
-          className="shrink-0 rounded-xl bg-emerald-600 px-5 py-3 text-[15px] font-bold text-white disabled:bg-gray-300"
+          className="shrink-0 rounded-full bg-navy px-6 py-3 text-[15px] font-semibold text-white transition-colors disabled:bg-line disabled:text-muted"
         >
           Pesan via WA
         </button>

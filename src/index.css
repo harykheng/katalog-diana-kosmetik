@@ -1,7 +1,27 @@
 @import 'tailwindcss';
 
-/* Mobile-first: target uji 360px. Tidak ada font eksternal supaya halaman tetap
-   ringan di koneksi lambat — pakai font bawaan HP. */
+/* ============================================================
+   Palet — mengikuti arah visual referensi: biru es sangat terang
+   sebagai latar, navy pekat untuk tombol & judul, kartu putih.
+   Semua warna didefinisikan di satu tempat; komponen memakai
+   namanya (bg-navy, text-ink, …), bukan angka hex.
+   ============================================================ */
+@theme {
+  --color-ink: #12263f; /* teks utama */
+  --color-muted: #6b7f95; /* teks sekunder */
+  --color-navy: #0f2a47; /* tombol utama, header */
+  --color-navy-soft: #1f4670; /* hover / aksen lebih terang */
+  --color-ice: #dce8f6; /* chip & baris terpilih */
+  --color-ice-light: #eef4fb; /* latar halaman */
+  --color-line: #dde7f2; /* garis pemisah & border */
+  --color-warn-bg: #fdf3dc; /* barang tanpa harga */
+  --color-warn-ink: #8a5a12;
+
+  /* Serif bawaan perangkat — nuansa referensi tanpa menambah
+     satu pun permintaan jaringan untuk memuat font. */
+  --font-display: Georgia, 'Times New Roman', Times, serif;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -9,8 +29,8 @@ html {
 body {
   margin: 0;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--color-ice-light);
+  color: var(--color-ink);
   /* Ruang untuk sticky bottom bar + safe area iPhone */
   padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 }
