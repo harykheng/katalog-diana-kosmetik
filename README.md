@@ -65,6 +65,36 @@ ditandai "Harga dikonfirmasi" dan tidak ikut total (ditangani di sisi aplikasi,
 bukan database). 40 hanya ada untuk mengembalikan keadaan kalau 39 terlanjur
 dijalankan. Kalau 39 tidak pernah dijalankan, lewati keduanya.
 
+## Pengujian
+
+```bash
+npx playwright install chromium   # sekali saja, di komputer baru
+npm test                          # ±15 detik
+```
+
+23 pengujian menjalankan katalog di browser sungguhan pada viewport **360px**
+— ukuran HP paling sempit yang ditargetkan. Seluruh panggilan jaringan disadap
+di `tests/fixtures.js`, jadi pengujian **tidak pernah menyentuh Supabase**: bisa
+jalan tanpa koneksi, tanpa kredensial, dan tidak mungkin mengubah data siapa pun.
+
+Yang dijaga, dan kenapa — semuanya berasal dari kesalahan yang benar-benar
+pernah terjadi di proyek ini:
+
+| Yang dijaga | Kalau lolos |
+|---|---|
+| Produk bersatuan `lusin` tidak dikali 12 lagi | Rp 470.000 tampil jadi Rp 5.640.000 |
+| Ganti satuan tidak mengonversi jumlah | "3" mendadak jadi 36 pcs tanpa disadari |
+| Barang tanpa harga tidak tampil "Rp 0" & tidak menggeser total | Toko mengira gratis; total estimasi salah |
+| Seluruh 1.500+ SKU terambil meski server memotong 1.000 baris | Ratusan produk "hilang" dan tidak ketemu saat dicari |
+| Kolom cari & ketiga tab terlihat tanpa menggulir, teks tab tidak terpotong | Kembali jadi halaman panjang yang bikin toko bingung |
+| Tombol − tetap utuh saat jumlah 0 (opacity harus 1) | Tombol terlihat rusak setengah |
+| Daftar hanya menarik foto kecil; besar cuma saat diketuk | Kuota transfer Supabase gratis terkuras |
+| Isi pesan WhatsApp: nama, jumlah, satuan, total | Kegagalan paling fatal — admin memproses pesanan yang salah |
+
+Menambah pengujian: tulis di `tests/`, pakai data & penyadap dari
+`tests/fixtures.js`. Jangan mengarang data baru dari nol — kalau produk contoh
+berubah, semua berkas ikut menyesuaikan dari satu tempat.
+
 ## Deploy (Vercel)
 
 1. Import repo ini di Vercel (framework: Vite, build `npm run build`, output `dist`).
