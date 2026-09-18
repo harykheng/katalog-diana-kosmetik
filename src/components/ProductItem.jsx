@@ -112,35 +112,42 @@ export default function ProductItem({ product, entry, onChange, note, onOpenPhot
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setQty(qty - 1)}
-            disabled={qty === 0}
-            aria-label={`Kurangi ${product.name}`}
-            className="h-9 w-9 rounded-full border border-line bg-white text-lg leading-none font-bold text-navy disabled:opacity-30"
-          >
-            −
-          </button>
-          <input
-            type="number"
-            inputMode="numeric"
-            value={qty === 0 ? '' : qty}
-            placeholder="0"
-            onChange={(e) => setQty(parseInt(e.target.value, 10) || 0)}
-            aria-label={`Jumlah ${product.name} dalam ${label}`}
-            className="h-9 w-11 rounded-lg border border-line bg-white text-center text-[15px] font-semibold text-ink"
-          />
-          <button
-            type="button"
-            onClick={() => setQty(qty + 1)}
-            aria-label={`Tambah ${product.name}`}
-            className="h-9 w-9 rounded-full border border-line bg-white text-lg leading-none font-bold text-navy"
-          >
-            +
-          </button>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {/* Satu kesatuan −│angka│+, bukan tiga kotak terpisah. Saat jumlah 0,
+              yang diredupkan HANYA warna tanda minusnya — border dan latarnya
+              tetap utuh, supaya tombolnya tidak terlihat seperti hilang. */}
+          <div className="flex h-9 items-center overflow-hidden rounded-full border border-line bg-white">
+            <button
+              type="button"
+              onClick={() => setQty(qty - 1)}
+              disabled={qty === 0}
+              aria-label={`Kurangi ${product.name}`}
+              className={`h-full w-9 text-[19px] leading-none font-semibold ${
+                qty === 0 ? 'cursor-default text-muted/45' : 'text-navy active:bg-ice'
+              }`}
+            >
+              −
+            </button>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={qty === 0 ? '' : qty}
+              placeholder="0"
+              onChange={(e) => setQty(parseInt(e.target.value, 10) || 0)}
+              aria-label={`Jumlah ${product.name} dalam ${label}`}
+              className="h-full w-9 border-x border-line bg-transparent text-center text-[15px] font-semibold text-ink outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => setQty(qty + 1)}
+              aria-label={`Tambah ${product.name}`}
+              className="h-full w-9 text-[19px] leading-none font-semibold text-navy active:bg-ice"
+            >
+              +
+            </button>
+          </div>
           {/* Satuan di sebelah angka — tidak boleh hilang di layar sempit */}
-          <span className="w-9 text-[11px] leading-tight font-bold text-ink">{label}</span>
+          <span className="w-8 text-[11px] leading-tight font-bold text-ink">{label}</span>
         </div>
       </div>
 
