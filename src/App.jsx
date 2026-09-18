@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import BottomBar from './components/BottomBar';
 import CategoryBrowser from './components/CategoryBrowser';
 import Header from './components/Header';
+import PhotoModal from './components/PhotoModal';
 import ProductItem from './components/ProductItem';
 import TopBar from './components/TopBar';
 import {
@@ -39,6 +40,8 @@ export default function App() {
   // Daftar barang terpilih dibuka dari bar bawah, bukan jadi tab keempat —
   // supaya ketiga tab tetap muat sejajar tanpa terpotong di layar 360px.
   const [reviewing, setReviewing] = useState(false);
+  // Foto yang sedang dibuka besar. null = tidak ada.
+  const [photo, setPhoto] = useState(null);
 
   useEffect(() => {
     if (configMissing || !token) {
@@ -205,6 +208,7 @@ export default function App() {
           items={lines.map((l) => productIndex.get(l.productId)).filter(Boolean)}
           cart={cart}
           onChange={handleChange}
+          onOpenPhoto={setPhoto}
           empty="Belum ada barang dipilih."
         />
       ) : keyword ? (
@@ -214,6 +218,7 @@ export default function App() {
           loading={productsLoading}
           cart={cart}
           onChange={handleChange}
+          onOpenPhoto={setPhoto}
         />
       ) : (
         <>
@@ -222,6 +227,7 @@ export default function App() {
               items={history}
               cart={cart}
               onChange={handleChange}
+              onOpenPhoto={setPhoto}
               note={(p) => `${p.orderCount}× · ${formatShortDate(p.lastOrdered)}`}
               empty="Belum ada riwayat pesanan untuk toko ini. Lihat tab Semua Barang."
             />
@@ -232,6 +238,7 @@ export default function App() {
               items={suggestions}
               cart={cart}
               onChange={handleChange}
+              onOpenPhoto={setPhoto}
               note={(p) => `${p.categoryName} · laris di toko lain`}
               empty="Belum ada rekomendasi untuk toko ini."
             />
@@ -243,6 +250,7 @@ export default function App() {
               loading={productsLoading}
               cart={cart}
               onChange={handleChange}
+              onOpenPhoto={setPhoto}
               category={category}
               onCategoryChange={setCategory}
             />
@@ -254,6 +262,8 @@ export default function App() {
       <p className="px-3 py-5 text-center text-[11px] text-gray-400">
         Harga dapat berubah sewaktu-waktu. Total di atas adalah estimasi.
       </p>
+
+      {photo && <PhotoModal product={photo} onClose={() => setPhoto(null)} />}
 
       <BottomBar
         itemCount={lines.length}
@@ -268,7 +278,7 @@ export default function App() {
   );
 }
 
-function List({ items, cart, onChange, note, empty }) {
+function List({ items, cart, onChange, note, empty, onOpenPhoto }) {
   if (!items.length) {
     return <p className="px-4 py-8 text-center text-[13px] text-gray-500">{empty}</p>;
   }
@@ -280,6 +290,7 @@ function List({ items, cart, onChange, note, empty }) {
           product={product}
           entry={cart.get(product.id)}
           onChange={onChange}
+          onOpenPhoto={onOpenPhoto}
           note={note ? note(product) : undefined}
         />
       ))}
@@ -287,7 +298,7 @@ function List({ items, cart, onChange, note, empty }) {
   );
 }
 
-function SearchResults({ matches, keyword, loading, cart, onChange }) {
+function SearchResults({ matches, keyword, loading, cart, onChange, onOpenPhoto }) {
   const shown = matches.slice(0, SEARCH_LIMIT);
   return (
     <div>
@@ -309,6 +320,7 @@ function SearchResults({ matches, keyword, loading, cart, onChange }) {
               product={product}
               entry={cart.get(product.id)}
               onChange={onChange}
+              onOpenPhoto={onOpenPhoto}
               note={product.categoryName}
             />
           ))}

@@ -16,6 +16,7 @@ export default function CategoryBrowser({
   onChange,
   category,
   onCategoryChange,
+  onOpenPhoto,
 }) {
   const categories = useMemo(() => {
     const map = new Map();
@@ -81,6 +82,7 @@ export default function CategoryBrowser({
             product={product}
             entry={cart.get(product.id)}
             onChange={onChange}
+            onOpenPhoto={onOpenPhoto}
           />
         ))}
       </ul>

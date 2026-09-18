@@ -15,6 +15,17 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const configMissing = !url || !anonKey;
 
 /**
+ * URL file di bucket publik Supabase Storage. Dipakai untuk foto produk —
+ * bucket publik supaya bisa di-cache CDN dan tidak perlu signed URL yang
+ * kedaluwarsa. Path sudah memuat timestamp, jadi URL-nya berubah setiap foto
+ * diganti dan tidak pernah ada cache yang basi.
+ */
+export function publicStorageUrl(bucket, path) {
+  if (!path || configMissing) return null;
+  return `${url}/storage/v1/object/public/${bucket}/${path}`;
+}
+
+/**
  * Panggil satu fungsi RPC. Mengembalikan array baris (bisa kosong).
  * Melempar Error kalau jaringan gagal atau server menolak.
  */

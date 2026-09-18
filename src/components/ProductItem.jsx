@@ -11,6 +11,7 @@ import {
   UNIT_LUSIN,
   unitLabel,
 } from '../lib/pricing';
+import ProductPhoto from './ProductPhoto';
 
 /**
  * Satu baris produk: dua baris saja supaya muat banyak barang per layar —
@@ -21,7 +22,7 @@ import {
  * kesalahan paling mahal di alur ini, jadi lebih baik berlebihan daripada
  * ambigu.
  */
-export default function ProductItem({ product, entry, onChange, note }) {
+export default function ProductItem({ product, entry, onChange, note, onOpenPhoto }) {
   const qty = entry?.qty || 0;
   const mode = entry?.unit || UNIT_BASE;
   const canLusin = supportsLusin(product);
@@ -52,6 +53,8 @@ export default function ProductItem({ product, entry, onChange, note }) {
       }`}
     >
       <div className="flex items-start gap-2">
+        <ProductPhoto product={product} onOpen={onOpenPhoto} />
+
         <p className="min-w-0 flex-1 text-[14px] leading-snug font-semibold text-gray-900">
           {product.name}
         </p>

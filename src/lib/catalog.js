@@ -1,4 +1,6 @@
-import { rpc } from './supabase';
+import { publicStorageUrl, rpc } from './supabase';
+
+const BUCKET_FOTO = 'product-photos';
 
 /**
  * Token diambil dari URL /t/:token. Tidak ada router library supaya bundle
@@ -18,6 +20,9 @@ function toProduct(row) {
     price: Number(row.price),
     unit: row.unit,
     categoryName: row.category_name || 'Lainnya',
+    // Versi kecil dimuat di daftar; versi besar hanya kalau fotonya diketuk.
+    photoThumb: publicStorageUrl(BUCKET_FOTO, row.photo_thumb_path),
+    photoLarge: publicStorageUrl(BUCKET_FOTO, row.photo_large_path),
   };
 }
 
