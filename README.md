@@ -58,12 +58,28 @@ Daftar link per toko bisa diambil dengan query di LANGKAH 7 file migration.
 | `migration38_token_otomatis.sql` | **Ya.** Token otomatis untuk customer baru + `catalog_base_url` |
 | `migration39_sembunyikan_harga_kosong.sql` | **Tidak — jangan dijalankan.** Sudah digantikan |
 | `migration40_barang_tanpa_harga_tetap_tampil.sql` | **Hanya kalau 39 terlanjur dijalankan** |
+| `migration41_foto_produk.sql` | **Ya.** Kolom & bucket foto produk + RPC ikut kirim path foto |
+| `migration42_perbaiki_paginasi_produk.sql` | **Ya.** Perbaikan bug produksi — lihat di bawah |
 
 39 dan 40 saling meniadakan. 39 menyembunyikan barang ber-harga 0 dari katalog;
 keputusannya kemudian diubah — barang itu tetap ditampilkan dan boleh dipesan,
 ditandai "Harga dikonfirmasi" dan tidak ikut total (ditangani di sisi aplikasi,
 bukan database). 40 hanya ada untuk mengembalikan keadaan kalau 39 terlanjur
 dijalankan. Kalau 39 tidak pernah dijalankan, lewati keduanya.
+
+**Bug produksi yang diperbaiki migration42:** tab Semua Barang tidak pernah
+selesai memuat. `rpcAll()` mengambil data bertahap lewat header HTTP
+`Range: 0-999`, `Range: 1000-1999`, dst, meniru pola bypass limit 1.000 baris
+di ERP. Ternyata Supabase tidak menghormati header `Range` untuk RPC yang
+dipanggil lewat POST — server selalu membalas 1.000 baris pertama yang sama,
+berapa pun halaman yang diminta (terkonfirmasi lewat tab Network browser:
+`Range: 16000-16999` diminta, `Content-Range: 0-999/*` yang dibalas). Browser
+tidak pernah tahu sudah sampai ujung data dan terus meminta "halaman
+berikutnya" sampai berhenti sendiri di pengaman 50.000 baris. Perbaikannya:
+`catalog_get_products` dan `catalog_get_history` sekarang menerima
+`p_limit`/`p_offset` sebagai parameter fungsi dan memotong hasilnya sendiri
+lewat `LIMIT`/`OFFSET` di SQL — tidak lagi bergantung pada header HTTP sama
+sekali.
 
 ## Pengujian
 
@@ -85,7 +101,8 @@ pernah terjadi di proyek ini:
 | Produk bersatuan `lusin` tidak dikali 12 lagi | Rp 470.000 tampil jadi Rp 5.640.000 |
 | Ganti satuan tidak mengonversi jumlah | "3" mendadak jadi 36 pcs tanpa disadari |
 | Barang tanpa harga tidak tampil "Rp 0" & tidak menggeser total | Toko mengira gratis; total estimasi salah |
-| Seluruh 1.500+ SKU terambil meski server memotong 1.000 baris | Ratusan produk "hilang" dan tidak ketemu saat dicari |
+| Seluruh 1.500+ SKU terambil meski satu halaman dibatasi 1.000 baris | Ratusan produk "hilang" dan tidak ketemu saat dicari |
+| Paginasi berhenti begitu sampai ujung data (bukan tergantung header Range) | Tab Semua Barang tidak pernah selesai memuat — lihat migration42 |
 | Kolom cari & ketiga tab terlihat tanpa menggulir, teks tab tidak terpotong | Kembali jadi halaman panjang yang bikin toko bingung |
 | Tombol − tetap utuh saat jumlah 0 (opacity harus 1) | Tombol terlihat rusak setengah |
 | Daftar hanya menarik foto kecil; besar cuma saat diketuk | Kuota transfer Supabase gratis terkuras |

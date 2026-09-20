@@ -102,12 +102,15 @@ export const KATALOG = {
 /**
  * Sadap semua panggilan RPC & foto.
  * Mengembalikan penampung yang ikut terisi selama pengujian berjalan:
- *   fotoDiminta  — URL foto yang benar-benar diunduh browser
- *   rangeDiminta — header Range per panggilan catalog_get_products
+ *   fotoDiminta     — URL foto yang benar-benar diunduh browser
+ *   paginasiDiminta — "offset-limit" per panggilan catalog_get_products,
+ *                     dibaca dari body permintaan (p_limit/p_offset), BUKAN
+ *                     header Range — Supabase terbukti tidak menghormati
+ *                     Range untuk RPC lewat POST, lihat migration42.
  */
 export async function pasangStub(page, data = KATALOG) {
   const fotoDiminta = [];
-  const rangeDiminta = [];
+  const paginasiDiminta = [];
 
   await page.route('**/rest/v1/rpc/**', async (route) => {
     const req = route.request();
@@ -115,9 +118,19 @@ export async function pasangStub(page, data = KATALOG) {
       return route.fulfill({ status: 204, headers: CORS, body: '' });
     }
     const fn = new URL(req.url()).pathname.split('/').pop();
-    if (fn === 'catalog_get_products') rangeDiminta.push(req.headers()['range'] || '(tanpa Range)');
+    let params = {};
+    try {
+      params = JSON.parse(req.postData() || '{}');
+    } catch {
+      params = {};
+    }
+    if (fn === 'catalog_get_products') {
+      const offset = params.p_offset ?? 0;
+      const limit = params.p_limit ?? 0;
+      paginasiDiminta.push(`${offset}-${offset + limit - 1}`);
+    }
 
-    const isi = typeof data[fn] === 'function' ? data[fn](req) : (data[fn] ?? []);
+    const isi = typeof data[fn] === 'function' ? data[fn](params) : (data[fn] ?? []);
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -140,7 +153,7 @@ export async function pasangStub(page, data = KATALOG) {
     };
   });
 
-  return { fotoDiminta, rangeDiminta };
+  return { fotoDiminta, paginasiDiminta };
 }
 
 export async function bukaKatalog(page, token = TOKEN) {
