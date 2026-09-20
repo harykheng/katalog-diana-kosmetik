@@ -25,31 +25,24 @@ export function publicStorageUrl(bucket, path) {
   return `${url}/storage/v1/object/public/${bucket}/${path}`;
 }
 
-/** PostgREST memotong respons di 1.000 baris; lihat rpcAll() di bawah. */
+/** PostgREST membatasi respons di 1.000 baris; lihat rpcAll() di bawah. */
 const BATAS_BARIS = 1000;
 
 /**
  * Panggil satu fungsi RPC. Mengembalikan array baris (bisa kosong).
  * Melempar Error kalau jaringan gagal atau server menolak.
- * `range` opsional: { from, to } untuk mengambil sepotong hasil.
  */
-export async function rpc(fn, params, range) {
+export async function rpc(fn, params) {
   if (configMissing) throw new Error('VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY belum diisi');
-
-  const headers = {
-    apikey: anonKey,
-    Authorization: `Bearer ${anonKey}`,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  };
-  if (range) {
-    headers['Range-Unit'] = 'items';
-    headers.Range = `${range.from}-${range.to}`;
-  }
 
   const response = await fetch(`${url}/rest/v1/rpc/${fn}`, {
     method: 'POST',
-    headers,
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${anonKey}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
     body: JSON.stringify(params || {}),
   });
 
@@ -64,21 +57,26 @@ export async function rpc(fn, params, range) {
 }
 
 /**
- * Sama seperti rpc(), tapi mengambil SELURUH baris.
+ * Sama seperti rpc(), tapi mengambil SELURUH baris lewat p_limit/p_offset —
+ * fungsinya sendiri (catalog_get_history, catalog_get_products) yang memotong
+ * hasilnya, bukan header HTTP Range.
  *
- * PostgREST membatasi satu respons di 1.000 baris. Katalog ini punya lebih dari
- * itu, jadi tanpa pengambilan bertahap sisanya tidak pernah sampai ke HP — dan
- * yang paling menyesatkan, kolom cari ikut tidak menemukannya karena memang
- * tidak pernah terunduh. Pola ini sama dengan fetchAll() di ERP.
+ * Sebelumnya paginasi dilakukan lewat header "Range: 0-999", "Range:
+ * 1000-1999", dst — pola yang sama dengan bypass limit 1.000 baris di ERP.
+ * Ternyata Supabase TIDAK menghormati header Range untuk RPC yang dipanggil
+ * lewat POST: server selalu membalas 1.000 baris pertama yang sama berapa pun
+ * halaman yang diminta. Akibatnya rpcAll() tidak pernah tahu sudah sampai
+ * ujung data — ia terus meminta "halaman berikutnya" tanpa henti, dan tab
+ * Semua Barang tidak pernah selesai memuat. Lihat migration42.
  */
 export async function rpcAll(fn, params, chunk = BATAS_BARIS) {
   const semua = [];
-  for (let from = 0; ; from += chunk) {
-    const bagian = await rpc(fn, params, { from, to: from + chunk - 1 });
+  for (let offset = 0; ; offset += chunk) {
+    const bagian = await rpc(fn, { ...params, p_limit: chunk, p_offset: offset });
     semua.push(...bagian);
     if (bagian.length < chunk) break;
-    // Pengaman kalau server suatu saat mengabaikan Range: berhenti daripada
-    // mengulang permintaan yang sama selamanya.
+    // Pengaman kalau fungsinya suatu saat mengabaikan p_limit/p_offset:
+    // berhenti daripada mengulang permintaan yang sama selamanya.
     if (semua.length > 50000) break;
   }
   return semua;
