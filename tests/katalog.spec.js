@@ -232,6 +232,43 @@ test.describe('Foto produk', () => {
     const tanpaFoto = await kartu(page, 'Bedak Padat Aurora Seri 2 12gr').boundingBox();
     expect(Math.abs(berfoto.height - tanpaFoto.height)).toBeLessThanOrEqual(1);
   });
+
+  test('spinner tampil selama foto besar belum selesai diunduh, hilang setelahnya', async ({
+    page,
+  }) => {
+    await pasangStub(page);
+
+    // Tahan permintaan foto besar supaya jendela loadingnya bisa diperiksa —
+    // tanpa ini, stub jaringan biasanya selesai terlalu cepat untuk dites.
+    let bukaFoto;
+    const tertunda = new Promise((resolve) => {
+      bukaFoto = resolve;
+    });
+    await page.route('**/storage/v1/object/public/**-large.webp', async (route) => {
+      await tertunda;
+      await route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        body: Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+          'base64'
+        ),
+      });
+    });
+
+    await bukaKatalog(page);
+    await kartu(page, 'Bedak Padat Aurora Seri 1 12gr')
+      .getByRole('button', { name: /^Lihat foto/ })
+      .click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    // Foto besar masih ditahan — toko harus melihat spinner, bukan kotak kosong.
+    await expect(dialog.locator('.animate-spin')).toBeVisible();
+
+    bukaFoto();
+    await expect(dialog.locator('.animate-spin')).toHaveCount(0);
+  });
 });
 
 test.describe('Pesan WhatsApp — hasil akhir seluruh alur', () => {
