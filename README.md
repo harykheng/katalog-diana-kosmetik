@@ -106,6 +106,7 @@ pernah terjadi di proyek ini:
 | Kolom cari & ketiga tab terlihat tanpa menggulir, teks tab tidak terpotong | Kembali jadi halaman panjang yang bikin toko bingung |
 | Tombol − tetap utuh saat jumlah 0 (opacity harus 1) | Tombol terlihat rusak setengah |
 | Daftar hanya menarik foto kecil; besar cuma saat diketuk | Kuota transfer Supabase gratis terkuras |
+| Spinner tampil sampai foto besar selesai diunduh | Kotak kosong tanpa keterangan di koneksi lambat, terlihat seperti rusak |
 | Isi pesan WhatsApp: nama, jumlah, satuan, total | Kegagalan paling fatal — admin memproses pesanan yang salah |
 
 Menambah pengujian: tulis di `tests/`, pakai data & penyadap dari

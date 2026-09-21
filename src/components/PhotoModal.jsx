@@ -1,11 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { formatCurrency, hasPrice, unitLabel, UNIT_BASE } from '../lib/pricing';
 
 /**
  * Foto besar saat thumbnail diketuk. Versi besar baru diunduh di sini, jadi
- * toko yang cuma menggulir daftar tidak pernah menariknya.
+ * toko yang cuma menggulir daftar tidak pernah menariknya — artinya di
+ * koneksi lambat ada jeda nyata sebelum foto ini muncul.
  */
 export default function PhotoModal({ product, onClose }) {
+  // Kalau tidak ada foto besar terpisah, yang dipakai ya thumbnail-nya —
+  // dan itu kemungkinan besar sudah ada di cache HP dari daftar, jadi tidak
+  // perlu menunggu.
+  const [besarSiap, setBesarSiap] = useState(!product?.photoLarge);
+
+  useEffect(() => {
+    setBesarSiap(!product?.photoLarge);
+  }, [product?.id, product?.photoLarge]);
+
   useEffect(() => {
     function onKey(e) {
       if (e.key === 'Escape') onClose();
@@ -39,12 +49,37 @@ export default function PhotoModal({ product, onClose }) {
         ✕
       </button>
 
-      <img
-        src={product.photoLarge || product.photoThumb}
-        alt={product.name}
-        className="max-h-[70vh] w-full rounded-2xl bg-white object-contain"
-        onClick={(e) => e.stopPropagation()}
-      />
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        {/* Thumbnail-nya sudah pernah diunduh untuk daftar, jadi tampil dulu
+            (diburamkan) sebagai placeholder — toko tidak menatap kotak
+            kosong sambil menunggu versi besar. */}
+        {product.photoThumb && (
+          <img
+            src={product.photoThumb}
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 h-full w-full rounded-2xl object-contain blur-sm transition-opacity duration-200 ${
+              besarSiap ? 'opacity-0' : 'opacity-70'
+            }`}
+          />
+        )}
+
+        <img
+          src={product.photoLarge || product.photoThumb}
+          alt={product.name}
+          onLoad={() => setBesarSiap(true)}
+          onError={() => setBesarSiap(true)}
+          className={`relative min-h-[45vh] max-h-[70vh] w-full rounded-2xl bg-white object-contain transition-opacity duration-200 ${
+            besarSiap ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+
+        {!besarSiap && (
+          <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center">
+            <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
+          </div>
+        )}
+      </div>
 
       <div className="mt-3 text-center text-white" onClick={(e) => e.stopPropagation()}>
         <p className="font-display text-[17px] leading-snug">{product.name}</p>
