@@ -124,7 +124,7 @@ test.describe('Satuan — bagian paling rawan di fitur ini', () => {
     await item.getByRole('button', { name: /^Tambah/ }).click();
     await item.getByRole('button', { name: 'lusin', exact: true }).click();
 
-    // 45.000 × 12 = 540.000 → Math.round(540000/100)*100
+    // 45.000 × 12 = 540.000 → Math.ceil(540000/100)*100
     await expect(item.getByText('1 lusin = 12 pcs · Rp 540.000')).toBeVisible();
   });
 
@@ -157,8 +157,13 @@ test.describe('Satuan — bagian paling rawan di fitur ini', () => {
     // yang beda untuk pesanan yang sama persis.
     await page.getByLabel('Cari barang').fill('mahkota');
     const item = kartu(page, 'Beautica Nail Polish 24 Colors ( Mahkota )');
-    await item.getByLabel(/^Jumlah/).fill('12');
 
+    // Harga referensi "/lusin" ikut dibulatkan NAIK juga — bukan cuma
+    // subtotal pesanan di bawah — supaya dua-duanya sama-sama Rp 54.900,
+    // bukan satu 54.800 (round-nearest lama) dan satu 54.900 (round-up baru).
+    await expect(item.getByText('Rp 54.900 / lusin')).toBeVisible();
+
+    await item.getByLabel(/^Jumlah/).fill('12');
     await expect(item.getByText('12 pcs · Rp 54.900')).toBeVisible();
 
     await page.getByRole('button', { name: 'Pesan via WA' }).click();

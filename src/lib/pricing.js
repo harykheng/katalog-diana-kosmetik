@@ -4,10 +4,12 @@
 // Aturan yang dipakai sama persis dengan ERP StokManager:
 //   • Harga di database (products.price) selalu harga per satuan dasar produk
 //     (products.unit), bukan harga lusin.
-//   • Harga lusin = Math.round((price * 12) / 100) * 100 — dibulatkan ke
-//     kelipatan 100 terdekat, identik dengan kolom "Harga / lusin" di
-//     products.html dan sales.html. Jangan diubah sepihak: kalau rumusnya beda,
-//     harga di katalog tidak akan cocok dengan harga yang dilihat sales.
+//   • Harga lusin = Math.ceil((price * 12) / 100) * 100 — dibulatkan NAIK ke
+//     kelipatan 100, identik dengan kolom "Harga / lusin" di products.html
+//     dan sales.html. Jangan diubah sepihak: kalau rumusnya beda, harga di
+//     katalog tidak akan cocok dengan harga yang dilihat sales.
+//     (Sebelumnya Math.round/ke-terdekat — diganti supaya sama dengan
+//     subtotal per baris di bawah ini, dan dengan hargaLusin() di ERP.)
 //   • Lusin hanya berlaku untuk produk bersatuan 'pcs'. Produk dengan satuan
 //     lain (lusin, box, pack, kg, ...) dijual apa adanya, tanpa konversi.
 //   • Subtotal per baris (jumlah × harga satuan) SELALU dibulatkan NAIK ke
@@ -39,9 +41,19 @@ export function hasPrice(product) {
   return Number.isFinite(Number(product.price)) && Number(product.price) > 0;
 }
 
+/**
+ * Dibulatkan NAIK ke kelipatan 100 — sama persis dengan
+ * `Math.ceil((qty * price) / 100) * 100` di invoices.html & sales.html ERP.
+ * Dipakai untuk harga lusin (di bawah), rekap kartu produk (ProductItem.jsx),
+ * dan subtotal baris pesanan (order.js) — satu fungsi untuk ketiganya.
+ */
+export function roundSubtotal(amount) {
+  return Math.ceil((Number(amount) || 0) / 100) * 100;
+}
+
 /** Harga satu lusin, mengikuti pembulatan ERP. */
 export function lusinPrice(product) {
-  return Math.round((Number(product.price) * PCS_PER_LUSIN) / 100) * 100;
+  return roundSubtotal(Number(product.price) * PCS_PER_LUSIN);
 }
 
 // Mode satuan yang dipilih toko:
@@ -74,17 +86,6 @@ export function unitLabel(product, mode) {
 /** Berapa pcs yang dimaksud, untuk rekap "2 lusin = 24 pcs". */
 export function isLusinMode(product, mode) {
   return resolveMode(product, mode) === UNIT_LUSIN;
-}
-
-/**
- * Subtotal satu baris (jumlah × harga satuan), dibulatkan NAIK ke kelipatan
- * 100 — sama persis dengan `Math.ceil((qty * price) / 100) * 100` di
- * invoices.html & sales.html ERP. Dipakai di kartu produk (rekap "12 pcs ·
- * Rp x") dan di order.js (baris pesanan + total) supaya dua-duanya selalu
- * sama dengan angka yang admin lihat di faktur.
- */
-export function roundSubtotal(amount) {
-  return Math.ceil((Number(amount) || 0) / 100) * 100;
 }
 
 export function formatCurrency(amount) {

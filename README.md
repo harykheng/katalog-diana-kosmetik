@@ -129,24 +129,25 @@ Ini bagian paling rawan di fitur ini — semua perhitungannya terkumpul di
 | Aturan | Nilai |
 |---|---|
 | Harga per satuan dasar | `products.price` (apa adanya dari ERP) |
-| Harga lusin | `Math.round(price * 12 / 100) * 100` — sama persis dengan ERP |
+| Harga lusin | `Math.ceil(price * 12 / 100) * 100` — dibulatkan NAIK, sama persis dengan ERP |
 | Lusin berlaku untuk | produk bersatuan `pcs` saja |
 | Produk satuan lain | dijual apa adanya (lusin, box, pack, kg, …), tanpa konversi |
 | Subtotal per baris (qty × harga satuan) | `Math.ceil(subtotal / 100) * 100` — dibulatkan NAIK, sama persis dengan `invoices.html`/`sales.html` ERP |
 | Tier harga per toko | belum dipakai — satu harga untuk semua toko |
 | Barang ber-harga 0 | tetap bisa dipesan, ditandai "Harga dikonfirmasi", **tidak ikut total** |
 
-Harga lusin dibulatkan ke kelipatan 100 **terdekat** (`Math.round`) — itu memang
-sudah sama dengan ERP sejak awal. Yang sebelumnya beda adalah subtotal per
-baris: katalog cuma mengalikan `qty × harga satuan` apa adanya, sementara ERP
-selalu membulatkan hasilnya **naik** ke kelipatan 100 (`Math.ceil`). Untuk
-harga yang genap ratusan dua rumus itu memberi hasil yang sama, jadi bug-nya
-tidak pernah kelihatan sampai ada produk dengan harga per pcs yang tidak
-genap ratusan (mis. Rp 4.570) — 12 pcs jadi Rp 54.840 di katalog tapi
-Rp 54.900 di faktur. `roundSubtotal()` di `pricing.js` sekarang menutup ini,
-dipakai di rekap kartu produk (`ProductItem.jsx`) dan di `order.js` (baris
-pesanan, total, teks WhatsApp) — satu fungsi, bukan dihitung ulang di
-masing-masing tempat.
+Satu aturan pembulatan untuk semuanya: **selalu NAIK ke kelipatan 100**
+(`Math.ceil`, fungsi `roundSubtotal()` di `pricing.js`) — dipakai untuk harga
+lusin, rekap kartu produk (`ProductItem.jsx`), dan subtotal baris pesanan
+(`order.js`: baris pesanan, total, teks WhatsApp). Sebelumnya harga lusin
+dibulatkan ke kelipatan 100 **terdekat** (`Math.round`), beda dari subtotal
+yang sudah lebih dulu pakai `Math.ceil` — untuk harga yang genap ratusan dua
+rumus itu kebetulan sama, jadi tidak pernah kelihatan bedanya sampai ada
+produk dengan harga per pcs yang tidak genap ratusan (mis. Rp 4.570): harga
+lusin tampil Rp 54.800 sementara subtotal 12 pcs tampil Rp 54.900 — dua angka
+beda di satu kartu produk yang sama. ERP-nya sendiri (`js/utils.js`,
+`products.html`, `sales.html` di repo `uddiana`) juga sudah disamakan ke
+`Math.ceil` supaya tidak ada dua sumber kebenaran.
 
 Barang tanpa harga tidak pernah ditampilkan sebagai "Rp 0" — itu terbaca
 seperti gratis. Jumlahnya tetap bisa diisi, subtotalnya nol, bar bawah menulis
