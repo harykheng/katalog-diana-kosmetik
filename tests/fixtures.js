@@ -84,6 +84,24 @@ const SABUN = [
   { product_id: 'p6', name: 'Masker Wajah Timun', sku: 'SB-002', price: '7500.00', unit: 'pcs', category_name: 'Sabun', photo_thumb_path: null, photo_large_path: null },
 ];
 
+/**
+ * Harga per pcs yang TIDAK genap ratusan — kasus nyata yang lolos ke produksi.
+ * 12 pcs × Rp 4.570 = Rp 54.840, tapi ERP membulatkan NAIK subtotal tiap
+ * baris ke kelipatan 100 (Math.ceil), jadi di faktur jadi Rp 54.900. Katalog
+ * yang cuma mengalikan apa adanya menampilkan Rp 54.840 — beda Rp 60 dari
+ * yang admin lihat untuk pesanan yang sama persis.
+ */
+export const HARGA_GANJIL = {
+  product_id: 'p7',
+  name: 'Beautica Nail Polish 24 Colors ( Mahkota )',
+  sku: 'NP-001',
+  price: '4570.00',
+  unit: 'pcs',
+  category_name: 'Nail Art',
+  photo_thumb_path: null,
+  photo_large_path: null,
+};
+
 const buangKolomRiwayat = ({ order_count, total_qty, last_ordered, ...sisa }) => sisa;
 const buangKolomSaran = ({ outlet_count, ...sisa }) => sisa;
 
@@ -96,6 +114,7 @@ export const KATALOG = {
     ...RIWAYAT.map(buangKolomRiwayat),
     ...SARAN.map(buangKolomSaran),
     ...SABUN,
+    HARGA_GANJIL,
   ],
 };
 

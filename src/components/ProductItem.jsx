@@ -6,6 +6,7 @@ import {
   lusinPrice,
   PCS_PER_LUSIN,
   priceForUnit,
+  roundSubtotal,
   supportsLusin,
   UNIT_BASE,
   UNIT_LUSIN,
@@ -159,7 +160,7 @@ export default function ProductItem({ product, entry, onChange, note, onOpenPhot
         >
           {qty} {label}
           {perLusin && ` = ${qty * PCS_PER_LUSIN} pcs`} ·{' '}
-          {berharga ? formatCurrency(qty * activePrice) : 'harga dikonfirmasi'}
+          {berharga ? formatCurrency(roundSubtotal(qty * activePrice)) : 'harga dikonfirmasi'}
         </p>
       )}
     </li>
