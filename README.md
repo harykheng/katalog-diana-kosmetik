@@ -100,6 +100,7 @@ pernah terjadi di proyek ini:
 |---|---|
 | Produk bersatuan `lusin` tidak dikali 12 lagi | Rp 470.000 tampil jadi Rp 5.640.000 |
 | Ganti satuan tidak mengonversi jumlah | "3" mendadak jadi 36 pcs tanpa disadari |
+| Subtotal dibulatkan NAIK ke kelipatan 100, sama seperti ERP | Harga tidak genap ratusan (mis. Rp 4.570) bikin total katalog beda dari total faktur |
 | Barang tanpa harga tidak tampil "Rp 0" & tidak menggeser total | Toko mengira gratis; total estimasi salah |
 | Seluruh 1.500+ SKU terambil meski satu halaman dibatasi 1.000 baris | Ratusan produk "hilang" dan tidak ketemu saat dicari |
 | Paginasi berhenti begitu sampai ujung data (bukan tergantung header Range) | Tab Semua Barang tidak pernah selesai memuat — lihat migration42 |
@@ -131,8 +132,21 @@ Ini bagian paling rawan di fitur ini — semua perhitungannya terkumpul di
 | Harga lusin | `Math.round(price * 12 / 100) * 100` — sama persis dengan ERP |
 | Lusin berlaku untuk | produk bersatuan `pcs` saja |
 | Produk satuan lain | dijual apa adanya (lusin, box, pack, kg, …), tanpa konversi |
+| Subtotal per baris (qty × harga satuan) | `Math.ceil(subtotal / 100) * 100` — dibulatkan NAIK, sama persis dengan `invoices.html`/`sales.html` ERP |
 | Tier harga per toko | belum dipakai — satu harga untuk semua toko |
 | Barang ber-harga 0 | tetap bisa dipesan, ditandai "Harga dikonfirmasi", **tidak ikut total** |
+
+Harga lusin dibulatkan ke kelipatan 100 **terdekat** (`Math.round`) — itu memang
+sudah sama dengan ERP sejak awal. Yang sebelumnya beda adalah subtotal per
+baris: katalog cuma mengalikan `qty × harga satuan` apa adanya, sementara ERP
+selalu membulatkan hasilnya **naik** ke kelipatan 100 (`Math.ceil`). Untuk
+harga yang genap ratusan dua rumus itu memberi hasil yang sama, jadi bug-nya
+tidak pernah kelihatan sampai ada produk dengan harga per pcs yang tidak
+genap ratusan (mis. Rp 4.570) — 12 pcs jadi Rp 54.840 di katalog tapi
+Rp 54.900 di faktur. `roundSubtotal()` di `pricing.js` sekarang menutup ini,
+dipakai di rekap kartu produk (`ProductItem.jsx`) dan di `order.js` (baris
+pesanan, total, teks WhatsApp) — satu fungsi, bukan dihitung ulang di
+masing-masing tempat.
 
 Barang tanpa harga tidak pernah ditampilkan sebagai "Rp 0" — itu terbaca
 seperti gratis. Jumlahnya tetap bisa diisi, subtotalnya nol, bar bawah menulis

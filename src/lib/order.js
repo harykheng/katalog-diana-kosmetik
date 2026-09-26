@@ -1,4 +1,4 @@
-import { formatCurrency, hasPrice, priceForUnit, unitLabel } from './pricing';
+import { formatCurrency, hasPrice, priceForUnit, roundSubtotal, unitLabel } from './pricing';
 
 export const LABEL_TANPA_HARGA = 'harga dikonfirmasi';
 
@@ -23,7 +23,7 @@ export function buildOrderLines(cart, products) {
       qty: entry.qty,
       unit: unitLabel(product, entry.unit),
       unitPrice,
-      subtotal: unitPrice * entry.qty,
+      subtotal: priced ? roundSubtotal(unitPrice * entry.qty) : 0,
       needsPrice: !priced,
     });
   }

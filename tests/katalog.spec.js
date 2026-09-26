@@ -146,6 +146,26 @@ test.describe('Satuan — bagian paling rawan di fitur ini', () => {
     await expect(item.getByRole('group')).toHaveCount(0);
     await expect(item.getByText('Rp 470.000 / lusin').first()).toBeVisible();
   });
+
+  test('subtotal dibulatkan NAIK ke kelipatan 100, sama seperti subtotal faktur ERP', async ({
+    page,
+  }) => {
+    // Bug nyata: harga per pcs yang tidak genap ratusan (Rp 4.570) dikalikan
+    // apa adanya di katalog, tapi ERP selalu membulatkan NAIK subtotal tiap
+    // baris faktur ke kelipatan 100. 12 pcs × Rp 4.570 = Rp 54.840, tapi yang
+    // admin lihat di faktur adalah Rp 54.900 — toko dan admin melihat angka
+    // yang beda untuk pesanan yang sama persis.
+    await page.getByLabel('Cari barang').fill('mahkota');
+    const item = kartu(page, 'Beautica Nail Polish 24 Colors ( Mahkota )');
+    await item.getByLabel(/^Jumlah/).fill('12');
+
+    await expect(item.getByText('12 pcs · Rp 54.900')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Pesan via WA' }).click();
+    const { teks } = await teksPesananWa(page);
+    expect(teks).toContain('- Beautica Nail Polish 24 Colors ( Mahkota ): 12 pcs');
+    expect(teks).toContain('Total estimasi: Rp 54.900');
+  });
 });
 
 test.describe('Barang tanpa harga', () => {

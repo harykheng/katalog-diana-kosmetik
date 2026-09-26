@@ -10,6 +10,11 @@
 //     harga di katalog tidak akan cocok dengan harga yang dilihat sales.
 //   • Lusin hanya berlaku untuk produk bersatuan 'pcs'. Produk dengan satuan
 //     lain (lusin, box, pack, kg, ...) dijual apa adanya, tanpa konversi.
+//   • Subtotal per baris (jumlah × harga satuan) SELALU dibulatkan NAIK ke
+//     kelipatan 100 — Math.ceil, persis rumus subtotal di invoices.html &
+//     sales.html ERP. Harga per pcs jarang genap ratusan (mis. Rp 4.570), jadi
+//     tanpa ini "Total estimasi" yang toko lihat di katalog akan beda dari
+//     total yang admin lihat begitu pesanan yang sama dimasukkan ke faktur.
 // ============================================================
 
 export const PCS_PER_LUSIN = 12;
@@ -69,6 +74,17 @@ export function unitLabel(product, mode) {
 /** Berapa pcs yang dimaksud, untuk rekap "2 lusin = 24 pcs". */
 export function isLusinMode(product, mode) {
   return resolveMode(product, mode) === UNIT_LUSIN;
+}
+
+/**
+ * Subtotal satu baris (jumlah × harga satuan), dibulatkan NAIK ke kelipatan
+ * 100 — sama persis dengan `Math.ceil((qty * price) / 100) * 100` di
+ * invoices.html & sales.html ERP. Dipakai di kartu produk (rekap "12 pcs ·
+ * Rp x") dan di order.js (baris pesanan + total) supaya dua-duanya selalu
+ * sama dengan angka yang admin lihat di faktur.
+ */
+export function roundSubtotal(amount) {
+  return Math.ceil((Number(amount) || 0) / 100) * 100;
 }
 
 export function formatCurrency(amount) {
