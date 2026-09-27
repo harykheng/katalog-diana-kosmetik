@@ -60,6 +60,7 @@ Daftar link per toko bisa diambil dengan query di LANGKAH 7 file migration.
 | `migration40_barang_tanpa_harga_tetap_tampil.sql` | **Hanya kalau 39 terlanjur dijalankan** |
 | `migration41_foto_produk.sql` | **Ya.** Kolom & bucket foto produk + RPC ikut kirim path foto |
 | `migration42_perbaiki_paginasi_produk.sql` | **Ya.** Perbaikan bug produksi — lihat di bawah |
+| `migration43_sembunyikan_stok_habis.sql` | **Ya.** Barang stok 0 tidak ditampilkan — lihat di bawah |
 
 39 dan 40 saling meniadakan. 39 menyembunyikan barang ber-harga 0 dari katalog;
 keputusannya kemudian diubah — barang itu tetap ditampilkan dan boleh dipesan,
@@ -80,6 +81,16 @@ berikutnya" sampai berhenti sendiri di pengaman 50.000 baris. Perbaikannya:
 `p_limit`/`p_offset` sebagai parameter fungsi dan memotong hasilnya sendiri
 lewat `LIMIT`/`OFFSET` di SQL — tidak lagi bergantung pada header HTTP sama
 sekali.
+
+**migration43:** barang dengan `products.stock_quantity <= 0` tidak lagi
+tampil di katalog — di ketiga daftar (Biasa Diambil, Belum Pernah Dicoba,
+Semua Barang) dan di pencarian, sekaligus, karena difilter di ketiga RPC-nya
+langsung. Begitu stok diisi ulang lewat Pembelian Barang di ERP, barangnya
+otomatis muncul lagi di pemanggilan berikutnya — tidak ada flag yang perlu
+diubah manual, murni baca `stock_quantity` terkini tiap kali toko membuka
+katalog. Tidak ada perubahan di kode React sama sekali; produk yang stoknya
+habis sekarang tidak pernah terkirim ke HP toko, bukan dikirim lalu
+disembunyikan di browser.
 
 ## Pengujian
 
@@ -113,6 +124,13 @@ pernah terjadi di proyek ini:
 Menambah pengujian: tulis di `tests/`, pakai data & penyadap dari
 `tests/fixtures.js`. Jangan mengarang data baru dari nol — kalau produk contoh
 berubah, semua berkas ikut menyesuaikan dari satu tempat.
+
+**Di luar jangkauan pengujian ini:** aturan yang letaknya di dalam fungsi SQL
+(RLS, filter `is_active`/`stock_quantity` di ketiga RPC, dst) — Playwright di
+sini cuma menyadap jaringan, tidak pernah menyentuh database sungguhan, jadi
+tidak bisa memverifikasi apa yang sebenarnya dikembalikan Postgres. Perubahan
+di file `supabase/*.sql` divalidasi manual di replika PostgreSQL lokal sebelum
+diserahkan (lihat isi migration-nya masing-masing), bukan lewat `npm test`.
 
 ## Deploy (Vercel)
 
@@ -234,5 +252,7 @@ Total estimasi: Rp 770.000
 
 ## Di luar lingkup
 
-Foto produk, indikator stok, riwayat order untuk dilihat toko, keranjang
-tersimpan, login, PWA, submit order ke ERP, notifikasi, halaman admin, analytics.
+Angka sisa stok ditampilkan ke toko (barang stok 0 disembunyikan begitu saja,
+lihat migration43 — tapi berapa sisanya tidak pernah ditampilkan), keranjang
+tersimpan, login, PWA, submit order ke ERP, notifikasi, halaman admin,
+analytics.
