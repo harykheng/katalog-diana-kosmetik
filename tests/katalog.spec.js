@@ -341,6 +341,35 @@ test.describe('Pesan WhatsApp — hasil akhir seluruh alur', () => {
   });
 });
 
+test.describe('Video cara pesan', () => {
+  test('muncul otomatis sekali di kunjungan pertama, tidak lagi sesudahnya, dan bisa dibuka ulang manual', async ({
+    page,
+  }) => {
+    await pasangStub(page);
+    await bukaKatalog(page, undefined, { skipVideoIntro: false });
+
+    const modal = page.getByRole('dialog', { name: 'Cara pesan lewat katalog' });
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('iframe[title="Cara pesan lewat katalog"]')).toHaveAttribute(
+      'src',
+      /youtube\.com\/embed\/-OG2e2mI5Gs/
+    );
+
+    await modal.getByRole('button', { name: 'Lanjut ke Katalog' }).click();
+    await expect(modal).toBeHidden();
+    // Halaman di baliknya tetap bisa dipakai setelah modal ditutup.
+    await expect(page.getByRole('button', { name: /Belum Dicoba/ })).toBeVisible();
+
+    // Kunjungan berikutnya (reload) di device yang sama — tidak muncul lagi otomatis.
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(page.getByRole('dialog', { name: 'Cara pesan lewat katalog' })).toBeHidden();
+
+    // Tapi tetap bisa dibuka manual kapan saja lewat tombol di header.
+    await page.getByRole('button', { name: '📹 Cara Pesan' }).click();
+    await expect(page.getByRole('dialog', { name: 'Cara pesan lewat katalog' })).toBeVisible();
+  });
+});
+
 test.describe('Token', () => {
   test('token tidak berlaku diberi pesan yang jelas', async ({ page }) => {
     await pasangStub(page, { catalog_get_outlet: [] });

@@ -5,7 +5,7 @@ import { normalizePhone } from '../lib/order';
  * berhuruf serif di bawahnya. Sengaja tidak tinggi — kolom cari dan pemilih
  * daftar di bawahnya yang harus cepat terlihat.
  */
-export default function Header({ outlet }) {
+export default function Header({ outlet, onShowVideo }) {
   const phone = normalizePhone(outlet.whatsappNumber);
   return (
     <header className="bg-white px-4 pt-4 pb-3.5">
@@ -20,14 +20,23 @@ export default function Header({ outlet }) {
             {outlet.storeName}
           </h1>
         </div>
-        {phone && (
-          <a
-            href={`https://wa.me/${phone}`}
-            className="mt-0.5 shrink-0 rounded-full bg-ice px-3 py-1.5 text-[11px] font-semibold text-navy"
+        <div className="mt-0.5 flex shrink-0 flex-col items-end gap-1.5">
+          <button
+            type="button"
+            onClick={onShowVideo}
+            className="rounded-full bg-ice px-3 py-1.5 text-[11px] font-semibold text-navy whitespace-nowrap"
           >
-            WA kantor
-          </a>
-        )}
+            📹 Cara Pesan
+          </button>
+          {phone && (
+            <a
+              href={`https://wa.me/${phone}`}
+              className="rounded-full bg-ice px-3 py-1.5 text-[11px] font-semibold text-navy"
+            >
+              WA kantor
+            </a>
+          )}
+        </div>
       </div>
     </header>
   );

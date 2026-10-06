@@ -175,7 +175,17 @@ export async function pasangStub(page, data = KATALOG) {
   return { fotoDiminta, paginasiDiminta };
 }
 
-export async function bukaKatalog(page, token = TOKEN) {
+// Modal "Cara Pesan" muncul otomatis cuma di kunjungan pertama (localStorage
+// kosong). Browser context Playwright selalu bersih, jadi tanpa ini SEMUA
+// pengujian lain bakal ketiban modal itu di depan. Default-nya dianggap
+// "sudah pernah lihat" supaya pengujian lain tidak perlu tahu soal video ini
+// sama sekali; set skipVideoIntro: false khusus di pengujian video itu sendiri.
+export async function bukaKatalog(page, token = TOKEN, { skipVideoIntro = true } = {}) {
+  if (skipVideoIntro) {
+    await page.addInitScript((t) => {
+      localStorage.setItem(`catalog_video_seen:${t}`, '1');
+    }, token);
+  }
   await page.goto(`/t/${token}`, { waitUntil: 'networkidle' });
 }
 
