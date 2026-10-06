@@ -5,6 +5,7 @@ import Header from './components/Header';
 import PhotoModal from './components/PhotoModal';
 import ProductItem from './components/ProductItem';
 import TopBar from './components/TopBar';
+import VideoModal from './components/VideoModal';
 import {
   fetchHistory,
   fetchOutlet,
@@ -21,6 +22,7 @@ import {
   whatsappUrl,
 } from './lib/order';
 import { configMissing } from './lib/supabase';
+import { hasSeenCaraPesanVideo, markCaraPesanVideoSeen } from './lib/video';
 
 const SUGGESTION_LIMIT = 12;
 const SEARCH_LIMIT = 60; // cukup untuk dipilih, tidak membanjiri HP kelas bawah
@@ -42,6 +44,7 @@ export default function App() {
   const [reviewing, setReviewing] = useState(false);
   // Foto yang sedang dibuka besar. null = tidak ada.
   const [photo, setPhoto] = useState(null);
+  const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     if (configMissing || !token) {
@@ -61,6 +64,10 @@ export default function App() {
         }
         setOutlet(found);
         setStatus('ready');
+        // Toko yang belum pernah lihat video "Cara Pesan" di device ini
+        // dikasih modalnya otomatis sekali; sesudahnya tetap bisa dibuka
+        // manual lewat tombol 📹 di Header.
+        if (!hasSeenCaraPesanVideo(token)) setShowVideo(true);
 
         // Dua daftar teratas didahulukan supaya halaman cepat berguna di
         // koneksi lambat; katalog lengkap menyusul di belakang.
@@ -184,7 +191,7 @@ export default function App() {
 
   return (
     <div className="mx-auto max-w-lg bg-ice-light">
-      <Header outlet={outlet} />
+      <Header outlet={outlet} onShowVideo={() => setShowVideo(true)} />
 
       <TopBar
         tabs={tabs}
@@ -264,6 +271,15 @@ export default function App() {
       </p>
 
       {photo && <PhotoModal product={photo} onClose={() => setPhoto(null)} />}
+
+      {showVideo && (
+        <VideoModal
+          onClose={() => {
+            setShowVideo(false);
+            markCaraPesanVideoSeen(token);
+          }}
+        />
+      )}
 
       <BottomBar
         itemCount={lines.length}
