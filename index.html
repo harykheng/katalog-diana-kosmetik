@@ -5,7 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#111827" />
-    <title>Katalog Pesanan</title>
+    <title>Katalog Online DIANA KOSMETIK</title>
+
+    <!-- Kartu pratinjau saat link dibagikan di WhatsApp dkk. Satu gambar
+         generik untuk semua toko (bukan per-toko) -- halaman ini SPA yang
+         sama persis untuk tiap /t/:token, dan WhatsApp membaca tag di sini
+         apa adanya tanpa menjalankan JS, jadi tidak bisa disesuaikan per
+         toko tanpa server terpisah yang me-render HTML per request. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DIANA KOSMETIK" />
+    <meta property="og:title" content="Katalog Online DIANA KOSMETIK" />
+    <meta property="og:description" content="Lihat barang & pesan langsung lewat WhatsApp." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>
